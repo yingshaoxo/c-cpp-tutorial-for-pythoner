@@ -38,7 +38,9 @@ WDTHOLD = Watchdog Timer Hold \(on\)
 
 > Preventing watchdog timer to reset, just hold on.
 
-BIT0 = Binary Digit 0
+BIT0 = Binary Digit 0+1 = 0x0001
+
+BIT1 = Binary Digit 1+1 = 0x0002
 
 ## References:
 
