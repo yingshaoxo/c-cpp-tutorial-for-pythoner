@@ -7,5 +7,6 @@
 * [The Values in C/C++](the-values-in-c-c++.md)
 * [Use Bazel and Gtest](use-bazel-and-gtest.md)
 * [MSP](msp/README.md)
-  * [MSP430F169](msp/msp430f169.md)
+  * [MSP430F169](msp/msp430f169/README.md)
+    * [Abbreviations](msp/msp430f169/abbreviations.md)
 
