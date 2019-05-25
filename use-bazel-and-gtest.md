@@ -16,7 +16,6 @@ The `binary BUILD file` may looks like this:
 cc_binary(
     name = "hello-world",
     srcs = ["hello-world.cc"],
-    hdrs = ["hello-world.h"],
     visibility = ["//visibility:public"]
 )
 ```
