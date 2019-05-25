@@ -2,7 +2,7 @@
 
 ## Why Bazel?
 
-Because `cmake` or `make` is too hard to learn,
+Because `cmake` or `make` is too hard to learn.
 
 ## How to learn Bazel?
 
