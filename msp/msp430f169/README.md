@@ -2,7 +2,9 @@
 
 ## Pin Map
 
-![](../../.gitbook/assets/pin_map_of_msp430f169.png)
+![Normal Case](../../.gitbook/assets/pin_map_of_msp430f169.png)
+
+![Chinese Version](../../.gitbook/assets/pin_map_of_msp430f169_chinese_version.png)
 
 ## Functional Block Diagram
 

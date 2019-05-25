@@ -10,17 +10,19 @@ int main(void)
     volatile unsigned int i;
 
     WDTCTL = WDTPW + WDTHOLD;                   // Stop WDT
-    P1DIR |= BIT0;                            // P1.0 set as output
+    P6DIR |= BIT0;                              // P6.0 set as output, BIT0=0x0001
 
-    while (1)                                  // continuous loop
+    while (1)
     {
-        P1OUT ^= BIT0;                          // XOR P1.0
+        P6OUT ^= BIT0;                          // XOR P6.0, reverse its value
         for (i = 50000; i > 0; i--) {
             ;
-        }                   // Delay
+        }                                       // Delay
     }
 }
 ```
+
+## Watchdog
 
 WD = Watch dog
 
@@ -38,9 +40,21 @@ WDTHOLD = Watchdog Timer Hold \(on\)
 
 > Preventing watchdog timer to reset, just hold on.
 
-BIT0 = Binary Digit 0+1 = 0x0001
+## Port
 
-BIT1 = Binary Digit 1+1 = 0x0002
+P6DIR = Port 6 Direction
+
+> For a pin, it only has two direction, input or output.
+
+Set a `pin 6.2` as an `output pin`: `P6DIR |= BIT2`
+
+* BIT0 = Binary Digit 0 = x.0
+* BIT1 = Binary Digit 1 = x.1
+* BIT2 = Binary Digit 2 = x.2
+
+## Wire your LED
+
+For this type of micro-controller, you have to connect `LED pin` with `Pin 60`by yourself.
 
 ## References:
 
