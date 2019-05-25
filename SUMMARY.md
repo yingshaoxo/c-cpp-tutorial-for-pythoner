@@ -8,5 +8,6 @@
 * [Use Bazel and Gtest](use-bazel-and-gtest.md)
 * [MSP](msp/README.md)
   * [MSP430F169](msp/msp430f169/README.md)
+    * [Hello World](msp/msp430f169/hello-world.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
