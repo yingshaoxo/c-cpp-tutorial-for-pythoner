@@ -44,6 +44,8 @@ WDTHOLD = Watchdog Timer Hold \(on\)
 
 P6DIR = Port 6 Direction
 
+P6OUT = Port 6 Output
+
 > For a pin, it only has two direction, input or output.
 
 Set a `pin 6.2` as an `output pin`: `P6DIR |= BIT2`
