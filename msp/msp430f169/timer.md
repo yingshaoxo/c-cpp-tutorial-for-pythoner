@@ -7,15 +7,16 @@ void main(void)
 {
     WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
 
-    P2DIR |= BIT0;                            // P2.0 output
+    P6DIR |= BIT0;                            // P6.0 output
 
     TBCCTL0 = CCIE;                           // CCR0 interrupt enabled
     TBCCR0 = 50000;
-    TBCTL = TBSSEL_2 + MC_2;                  // SMCLK, count mode
+    TBCTL = TBSSEL_2 + MC_2;                  // SMCLK + Continuous up count mode
 
     _BIS_SR(LPM0_bits + GIE);                 // Enter LPM0 w/ interrupt
 
-    while (1) {
+    while (1)
+    {
         ;
     }
 }
@@ -24,10 +25,12 @@ void main(void)
 #pragma vector=TIMERB0_VECTOR
 __interrupt void Timer_B(void)
 {
-    P2OUT ^= BIT0;                            // Toggle P2.0
+    P6OUT ^= BIT0;                            // Toggle P6.0
     TBCCR0 += 50000;                          // Add Offset to CCR0
 }
 ```
+
+## Control Timer
 
 TBCCTL0 = Timer B Capture/Compare Control 0
 
@@ -41,7 +44,7 @@ TBCTL = Timer B Control
 
 TBSSEL\_2 = Timer B Source Clock Select 2 \(which is SMCLK\)
 
-* ~~TBCLK: \(PWM\) Time based clock. \(I don't know this\)~~
+* ~~TBCLK: Time based clock. \(I don't know this\)~~
 * ACLK: Auxiliary clock, is usually a 32kHz crystal clock. It is used for peripheral modules that require a low-frequency clock \(e.g. real-time-clock, ...\)
 * SMCLK: Sub-main clock, is usually a high frequency clock and it is used for peripheral modules \(e.g. Timers, serial communication modules, ...\)
 * ~~INCLK: \(I don't know this\)~~
@@ -52,6 +55,8 @@ MC\_2 = mode control: 2 - Continuous up
 > "Continuous" mode is typically the most used one. It counts until the overflow of the timer register, then restarts from zero.
 >
 > You can also use the "up" mode. In that case the timer counter should automatically reset to zero after reaching CCR. \(MC\_1 will do that\)
+
+## Define an Interrupt Service Routine
 
 \_BIS\_SR\(mask\) = \_bis\_SR\_register\(mask\) = **\_\_bis\_SR\_register** sets the bits specified in **mask** in the MSP430 status register \(i.e. it bitwise-ors **mask** into the status register\).
 
@@ -66,6 +71,14 @@ GIE = General Interrupt Enable
 > If you write an ISR\(Interrupt Service Routine\), it is just a function. A function with specific entry/exit code. It is a function that is never called by anyone in the source code. So it is a candidate for being discarded at link \(or compile\) time.
 
 > The "\#pragma vector" generates a reference to the following function and locates it at the TIMERB\_VECTOR position in the interrupt vector table. So the ISR gets referenced \(and the linker won’t discard it\) and the CPU knows where to jump in case of an TIMERB interrupt.
+
+## Calculate the counting number for a timer
+
+![](../../.gitbook/assets/mspf169_characteristics_on_different_mode.png)
+
+From the above sheet we know `sub-main clock (SMCLK)` is  $$1 MHz$$ at `low-power mode 0` .
+
+So there must have some ways to calculate that counting number.
 
 ## References:
 
