@@ -1,64 +1,85 @@
-# Analog to Digital Converter
-
-## Warning: this article is not completed at this moment!
-
-
+# Timer
 
 ```c
 #include <msp430.h>
 
-int main(void)
+void main(void)
 {
     WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
-    ADC12CTL0 = SHT0_2 + ADC12ON;            // Set sampling time, turn on ADC12
-    ADC12CTL1 = SHP;                          // Use sampling timer
-    ADC12IE = 0x01;                           // Enable interrupt
-    ADC12CTL0 |= ENC;                         // Conversion enabled
-    P6SEL |= 0x01;                            // P6.0 ADC option select
-    P1DIR |= 0x01;                            // P1.0 output
 
-    for (;;)
-    {
-        ADC12CTL0 |= ADC12SC;                   // Sampling open
-        __bis_SR_register(CPUOFF + GIE);      // LPM0, ADC12_ISR will force exit
+    P2DIR |= BIT0;                            // P2.0 output
+
+    TBCCTL0 = CCIE;                           // CCR0 interrupt enabled
+    TBCCR0 = 50000;
+    TBCTL = TBSSEL_2 + MC_2;                  // SMCLK, count mode
+
+    _BIS_SR(LPM0_bits + GIE);                 // Enter LPM0 w/ interrupt
+
+    while (1) {
+        ;
     }
 }
 
-// ADC12 interrupt service routine
-#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=ADC12_VECTOR
-__interrupt void ADC12_ISR(void)
-#elif defined(__GNUC__)
-void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
-#else
-#error Compiler not supported!
-#endif
+// Timer B0 interrupt service routine
+#pragma vector=TIMERB0_VECTOR
+__interrupt void Timer_B(void)
 {
-    if (ADC12MEM0 < 0x7FF)
-        P1OUT &= ~0x01;                       // Clear P1.0 LED off
-    else
-        P1OUT |= 0x01;                        // Set P1.0 LED on
-    __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
+    P2OUT ^= BIT0;                            // Toggle P2.0
+    TBCCR0 += 50000;                          // Add Offset to CCR0
 }
 ```
 
-ADC12 = \(12-bit sample-and-hold\) **Analog-to-Digital Converter**
+TBCCTL0 = Timer B Capture/Compare Control 0
 
-> An ADC's job is to perform a conversion by sampling `an analog voltage` into `a digital value`.
+CCIE = Capture/compare interrupt enable
 
-ADC12CTL0 = ADC12 Control Register 0
+TBCCR0 = Timer B Capture/Compare Register 0
 
-> The ADC12 conversion core is configured using `ADC12CTL0` and `ADC12CTL1`.
+> Since I can't find any explanation about TBCCR, I treat it as a variable where saves the `delay time` for timer B
+
+TBCTL = Timer B Control
+
+TBSSEL\_2 = Timer B Source Clock Select 2 \(which is SMCLK\)
+
+* ~~TBCLK: \(PWM\) Time based clock. \(I don't know this\)~~
+* ACLK: Auxiliary clock, is usually a 32kHz crystal clock. It is used for peripheral modules that require a low-frequency clock \(e.g. real-time-clock, ...\)
+* SMCLK: Sub-main clock, is usually a high frequency clock and it is used for peripheral modules \(e.g. Timers, serial communication modules, ...\)
+* ~~INCLK: \(I don't know this\)~~
+* ~~MCLK: Master clock, is used as clock source for the CPU.~~
+
+MC\_2 = mode control: 2 - Continuous up
+
+> "Continuous" mode is typically the most used one. It counts until the overflow of the timer register, then restarts from zero.
 >
-> A `Control Register` is nothing but a variable where stores `controlling information`.
+> You can also use the "up" mode. In that case the timer counter should automatically reset to zero after reaching CCR. \(MC\_1 will do that\)
 
-SHT0\_2 = Sample Hold 0, Select Bit: 2
+\_BIS\_SR\(mask\) = \_bis\_SR\_register\(mask\) = **\_\_bis\_SR\_register** sets the bits specified in **mask** in the MSP430 status register \(i.e. it bitwise-ors **mask** into the status register\).
 
+LPM0 = Low Power Mode 0
 
+> You could view those details at `MSP430F169 Datasheet.pdf`
+
+GIE = General Interrupt Enable
+
+\#pragma vector = TIMERB\_VECTOR
+
+> If you write an ISR\(Interrupt Service Routine\), it is just a function. A function with specific entry/exit code. It is a function that is never called by anyone in the source code. So it is a candidate for being discarded at link \(or compile\) time.
+
+> The "\#pragma vector" generates a reference to the following function and locates it at the TIMERB\_VECTOR position in the interrupt vector table. So the ISR gets referenced \(and the linker won’t discard it\) and the CPU knows where to jump in case of an TIMERB interrupt.
 
 ## References:
 
-{% embed url="https://users.wpi.edu/~ndemarinis/ece2049/e16/lecture10.html" %}
+{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/362152?-pragma-vector" %}
+
+{% embed url="https://stackoverflow.com/questions/36150440/reset-timer-on-msp430" %}
+
+
+
+
+
+
+
+
 
 
 
