@@ -10,7 +10,7 @@ void main(void)
     P6DIR |= BIT0;                            // P6.0 output
 
     TBCCTL0 = CCIE;                           // CCR0 interrupt enabled
-    TBCCR0 = 50000;
+    TBCCR0 = 50000;                           // Counting number
     TBCTL = TBSSEL_2 + MC_2;                  // SMCLK + Continuous up count mode
 
     _BIS_SR(LPM0_bits + GIE);                 // Enter LPM0 w/ interrupt
