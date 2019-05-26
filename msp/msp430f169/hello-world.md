@@ -38,7 +38,7 @@ WDTPW = Watchdog Timer Pass Word
 
 WDTHOLD = Watchdog Timer Hold \(on\)
 
-> Preventing watchdog timer to reset, just hold on.
+> Preventing watchdog timer to reset the micro-controller, just hold on.
 
 ## Port
 
@@ -53,6 +53,42 @@ Set a `pin 6.2` as an `output pin`: `P6DIR |= BIT2`
 * BIT0 = Binary Digit 0 = x.0
 * BIT1 = Binary Digit 1 = x.1
 * BIT2 = Binary Digit 2 = x.2
+
+## Basic C Operators
+
+`&&` means `and` 
+
+`||` means `or`
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    unsigned int a = 60; /* 60 = 0011 1100 */
+    unsigned int b = 13; /* 13 = 0000 1101 */
+    int c = 0;
+
+    c = a & b;           /* 12 = 0000 1100 */
+
+    c = a | b;           /* 61 = 0011 1101 */
+
+    c = a ^ b;           /* 49 = 0011 0001 */
+
+    c = ~a;             /* -61 = 1100 0011 */
+
+    c = a << 2;         /* 240 = 1111 0000 */
+
+    c = a >> 2;          /* 15 = 0000 1111 */
+
+    return 0;
+}
+```
+
+`a |= a` 
+
+equal to 
+
+`a = a | a` 
 
 ## Wire your LED
 
