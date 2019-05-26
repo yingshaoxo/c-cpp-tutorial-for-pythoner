@@ -9,6 +9,7 @@
 * [MSP](msp/README.md)
   * [MSP430F169](msp/msp430f169/README.md)
     * [Hello World](msp/msp430f169/hello-world.md)
-    * [Timer](msp/msp430f169/timer.md)
+    * [Timer](msp/msp430f169/timer-1.md)
+    * [Analog to Digital Converter](msp/msp430f169/timer.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
