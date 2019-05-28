@@ -55,7 +55,7 @@ void main(void)
     unsigned char temp;
     while (1)
     {
-        if (values_from_input_key != original_button_state) // we have detected at least a button state change
+        if (values_from_input_key != original_button_state) // we have detected at least one button state change
         {
             delay(1);            //  wait a "second"!
 
