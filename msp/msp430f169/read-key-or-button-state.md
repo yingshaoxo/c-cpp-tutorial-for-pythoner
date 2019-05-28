@@ -116,7 +116,7 @@ while 1:
 ## What happens?
 
 1. Set `port 1.0` to input: `PIDIR &= ~(BIT0)`
-2. You should see those comments in codes seriously.
+2. You should check those comments in above codes seriously.
 3. A button was connected, you get 1; A button was being pressed, you get 0.
 4. Chinese version board should follow Chinese datasheet gave by the seller. Otherwise, you'll find out that you just connected to a wrong port according to an official document.
 5. `Binary to Hex` or `Binary calculation` is sucked, I should find a way to automate it.
@@ -127,7 +127,9 @@ while 1:
 
 Debugger is a good thing since we don't have `Serial feedback`
 
-You can use Debugger to check register values at run time.
+You can use Debugger to check `register values` at run time.
+
+`register` is a fancy word for `variable` or `storage`
 
 ## References:
 
