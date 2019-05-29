@@ -111,15 +111,23 @@ __interrupt void Timer_A(void)
 >
 > Having a divider is better than no options.
 
+`Timer A register` will count at 32768 Hz, meaning it will tick 32768 times per second.
+
+`Timer A register` ~~will count at 32768 Hz, meaning TACCR\(Timer A Capture/Compare Register\) will increase 32768 per second~~.
+
 ## Timer Modes
 
 ![](../../.gitbook/assets/msp430f169_timer_modes.png)
 
-It seems like you should chose `Up mode` if you want to control your `timer` by using TACCR0
+~~It seems like you should chose Up mode if you want to control your timer by using TACCR0.~~
+
+$$
+0ffff \approx 32768 \times 2 = 65536
+$$
 
 ## Interrupt
 
-If you have set an `Interrupt Service Routine`, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`. 
+~~If you have set an Interrupt Service Routine, then that function will be called every time timer register overflows from 0xFFFF or TACCR0 back to zero.~~ 
 
 ## What about the codes above?
 
@@ -129,5 +137,5 @@ For this section, the program does not important, the theory does.
 
 {% embed url="https://embedded.fm/blog/ese101-msp430-timers" %}
 
-
+{% embed url="http://www.ocfreaks.com/msp430-timer-programming-tutorial/" %}
 
