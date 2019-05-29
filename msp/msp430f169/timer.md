@@ -42,7 +42,7 @@ TBCCR0 = Timer B Capture/Compare Register 0
 
 TBCTL = Timer B Control
 
-TBSSEL\_2 = Timer B Source Clock Select 2 \(which is SMCLK\)
+TBSSEL\_2 = Timer B Source-clock Select 2 \(which is SMCLK\)
 
 * ~~TBCLK: Time based clock. \(I don't know this\)~~
 * ACLK: Auxiliary clock, is usually a 32kHz crystal clock. It is used for peripheral modules that require a low-frequency clock \(e.g. real-time-clock, ...\)

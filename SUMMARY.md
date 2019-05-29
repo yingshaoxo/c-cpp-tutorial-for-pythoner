@@ -11,6 +11,7 @@
     * [Hello World](msp/msp430f169/hello-world.md)
     * [Read Key or Button State](msp/msp430f169/read-key-or-button-state.md)
     * [Timer](msp/msp430f169/timer.md)
+    * [Dive into Timer](msp/msp430f169/dive-into-timer.md)
     * [Analog to Digital Converter](msp/msp430f169/adc.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
