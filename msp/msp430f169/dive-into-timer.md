@@ -4,48 +4,40 @@
 #include <msp430.h> 
 
 unsigned int i = 0, j = 0, dir = 0;
-unsigned int flag = 0;  //flag--灯光流动方式,0-灯的点亮顺序D3 -> D1;1-灯的点亮顺序D1 -> D3
-unsigned int speed = 1;  //speed--灯光流动速度,取值0~3
+unsigned int flag = 0;  // flag--灯光流动方式, 0-灯的点亮顺序D3 -> D1; 1-灯的点亮顺序D1 -> D3
+unsigned int speed = 1;  // speed--灯光流动速度, 取值0~3
 
-/****************主函数****************/
 void main(void)
 {
-    WDTCTL = WDTPW + WDTHOLD;       //关闭看门狗
+    WDTCTL = WDTPW + WDTHOLD;       // Stop WDT
 
-    CCTL0 = CCIE;                   //使能CCR0中断
+    CCTL0 = CCIE;                   // CCR0 interrupt enabled
     CCR0 = 50000;
-    TACTL = TASSEL_2 + ID_3 + MC_1; //定时器A的时钟源选择SMCLK，增计数模式
-    P2DIR = 0x0f;                   //设置P2口方向为输出
-    P2OUT = 0x00;                   //灭
+    TACTL = TASSEL_2 + ID_3 + MC_1; // TimerA source-clock select SMCLK; UP mode
+    P2DIR |= (BIT0 | BIT1 | BIT2 | BIT3);      // set P2 0-3 as output
+    P2OUT = 0x00;                              // clear P2
 
-    _EINT();                        //使能全局中断
-    // LPM0;                           //CPU进入LPM0模式
+    _EINT();                        // Enable the global interrupt
+    // LPM0;                        // Enter low power mode
 
     while (1)
         ;
 }
 
-/*******************************************
- 函数名称：Timer_A
- 功    能：定时器A的中断服务函数，在这里通过标志
- 控制流水灯的流动方向和流动速度
- 参    数：无
- 返回值  ：无
- ********************************************/
 #pragma vector = TIMERA0_VECTOR
 __interrupt void Timer_A(void)
 {
     if (flag == 0)
     {
-        P2OUT = (0x08 >> (i++));    //灯的点亮顺序D3 -> D1
+        P2OUT = (0x08 >> (i++));    // 灯的点亮顺序D3 -> D1
     }
     else if (flag == 1)
     {
-        P2OUT = (0x01 << (i++));    //灯的点亮顺序D1 -> D3
+        P2OUT = (0x01 << (i++));    // 灯的点亮顺序D1 -> D3
     }
     else
     {
-        if (dir)          //灯的点亮顺序D3 -> D1,D1 -> D3,循环绕圈
+        if (dir)          // 灯的点亮顺序D3 -> D1, D1 -> D3, 循环绕圈
         {
             P2OUT = (0x08 >> (i++));
         }
@@ -118,6 +110,20 @@ __interrupt void Timer_A(void)
 > If they gave you no dividers at all, then you’d be stuck with whatever speed the four input clocks happened to be running at. 
 >
 > Having a divider is better than no options.
+
+## Timer Modes
+
+![](../../.gitbook/assets/msp430f169_timer_modes.png)
+
+It seems like you should chose `Up mode` if you want to control your `timer` by using TACCR0
+
+## Interrupt
+
+If you have set an `Interrupt Service Routine`, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`. 
+
+## What about the codes above?
+
+For this section, the program does not important, the theory does.
 
 ## References:
 
