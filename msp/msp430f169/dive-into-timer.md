@@ -104,7 +104,7 @@ int main(void)
 
     while (1)
     {
-        ;
+        ; // yingshaoxo tip: this loop will block the main process. So the interrupt function could work better.
     }
 }
 ```
