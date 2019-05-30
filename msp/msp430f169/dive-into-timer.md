@@ -143,6 +143,20 @@ $$
 
 If you have set an Interrupt Service Routine, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`. 
 
+## Time cost for each Timer Interrupt \(or TACCR0 Overflow\)
+
+$$
+\text{Timer Period in Seconds} = \frac{\text{Division} \times (TACCR0 + 1)}{\text{Input clock in Hz}}
+$$
+
+For example, if we use `a divider of 1`, `Input clock of 1MHz` and `TACCR0 = 1000-1 = 999`, we get:
+
+$$
+\text{Timer Period in Seconds} = \frac{\text{1} \times (999 + 1)}{1 \times 10^6} = 0.001\ Second = 1 \ ms = 1 \ microsecond
+$$
+
+That is to say, the interrupt function will be called per 1 microsecond.
+
 ## Delay
 
 Use a Timer or Use a default function `__delay_cycles(x)`
