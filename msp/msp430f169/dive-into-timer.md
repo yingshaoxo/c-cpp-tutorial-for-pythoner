@@ -1,94 +1,110 @@
 # Dive into Timer
 
 ```c
-#include <msp430.h> 
+#include <msp430.h>
 
-unsigned int i = 0, j = 0, dir = 0;
-unsigned int flag = 0;  // flag--灯光流动方式, 0-灯的点亮顺序D3 -> D1; 1-灯的点亮顺序D1 -> D3
-unsigned int speed = 1;  // speed--灯光流动速度, 取值0~3
+unsigned int my_overflow_counting = 0;
 
-void main(void)
+void initTimer_B(void)
 {
-    WDTCTL = WDTPW + WDTHOLD;       // Stop WDT
-
-    CCTL0 = CCIE;                   // CCR0 interrupt enabled
-    CCR0 = 50000;
-    TACTL = TASSEL_2 + ID_3 + MC_1; // TimerA source-clock select SMCLK; UP mode
-    P2DIR |= (BIT0 | BIT1 | BIT2 | BIT3);      // set P2 0-3 as output
-    P2OUT = 0x00;                              // clear P2
-
-    _EINT();                        // Enable the global interrupt
-    // LPM0;                        // Enter low power mode
-
-    while (1)
-        ;
+    //Timer_B Configuration
+    TBCCR0 = 0; // Stop Timer
+    TBCCTL0 |= CCIE; //Enable interrupt for CCR0.
+    TBCTL = TBSSEL_2 + ID_0 + MC_1; //TimerB Source-clock Select SMCLK, SMCLK/1, UP Mode
 }
 
-#pragma vector = TIMERA0_VECTOR
-__interrupt void Timer_A(void)
+void delayMS(int microseconds)
 {
-    if (flag == 0)
+    my_overflow_counting = 0; //Reset Over-Flow counter
+
+    TBCCR0 = 1000 - 1; //Start Timer, Compare value for Up Mode to get 1ms delay per loop
+    //Total count = TBCCR0 + 1. Hence we need to subtract 1.
+
+    while (my_overflow_counting <= microseconds)
     {
-        P2OUT = (0x08 >> (i++));    // 灯的点亮顺序D3 -> D1
+        ;
     }
-    else if (flag == 1)
+}
+
+//Timer ISR
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B_CCR0_ISR(void)
+{
+    my_overflow_counting++; //Increment Over-Flow Counter
+}
+
+int main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
+    P6DIR |= BIT0; // Configure P6.0 as Output
+    P6OUT = 0x00; // clear port 6
+
+    // We assume SMCLK = 1MHz by default
+    initTimer_B();
+    __enable_interrupt();
+
+    while (1)
     {
-        P2OUT = (0x01 << (i++));    // 灯的点亮顺序D1 -> D3
+        /*
+        P6OUT ^= BIT0; //Drive P6.0 HIGH - LED1 ON
+        delayMS(500); //Wait 0.5 Secs
+        */
+
+        P6OUT |= BIT0; //Drive P6.0 HIGH - LED1 ON
+        delayMS(500); //Wait 0.5 Secs
+
+        P6OUT &= ~BIT0; //Drive P6.0 LOW - LED1 OFF
+        delayMS(500); //Wait 0.5 Secs
     }
-    else
+}
+
+```
+
+```c
+#include <msp430.h>
+
+unsigned int custom_overflow_counting;
+
+void initTimer_A(void)
+{
+    // Timer Configuration
+    TACCR0 = 0;  // Initially, Stop the Timer
+    TACCTL0 |= CCIE;  // Enable interrupt for CCR0.
+    TACTL = TASSEL_2 + ID_0 + MC_1;  // Select SMCLK, SMCLK/1 , Up Mode
+}
+
+//Timer ISR
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A_CCR0_ISR(void)
+{
+    custom_overflow_counting++;
+    if (custom_overflow_counting >= 2000)  // 2000ms
     {
-        if (dir)          // 灯的点亮顺序D3 -> D1, D1 -> D3, 循环绕圈
-        {
-            P2OUT = (0x08 >> (i++));
-        }
-        else
-        {
-            P2OUT = (0x01 << (i++));
-        }
+        P6OUT ^= BIT0;
+        custom_overflow_counting = 0;
     }
+}
 
-    if (i == 4)
+int main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
+    P6DIR |= BIT0;  // Configure P6.0 as Output
+    P6OUT = 0x00;  // Clear port 6
+
+    // We assume SMCLK = 1MHz by default
+    initTimer_A();
+    __enable_interrupt();
+
+    custom_overflow_counting = 0;
+    TACCR0 = 1000 - 1; // Start Timer, Compare value for Up Mode to get 1ms delay per loop
+    /*
+     Total count = TACCR0 + 1. Hence we need to subtract 1.
+     1000 ticks at 1MHz will yield a delay of 1ms.
+     */
+
+    while (1)
     {
-        i = 0;
-        dir = ~dir;
-    }
-
-    j++;
-    if (j == 40)
-    {
-        i = 0;
-        j = 0;
-        flag++;
-
-        if (flag == 4)
-            flag = 0;
-
-        switch (speed)
-        {
-        case 0:
-            TACTL &= ~(ID0 + ID1);
-            TACTL |= ID_3;
-            break;
-        case 1:
-            TACTL &= ~(ID0 + ID1);
-            TACTL |= ID_2;
-            break;
-        case 2:
-            TACTL &= ~(ID0 + ID1);
-            TACTL |= ID_1;
-            break;
-        case 3:
-            TACTL &= ~(ID0 + ID1);
-            TACTL |= ID_0;
-            break;
-        default:
-            break;
-        }
-
-        if (flag != 3)
-            speed++;
-        if (speed == 4)
-            speed = 0;
+        ;
     }
 }
 ```
@@ -113,13 +129,11 @@ __interrupt void Timer_A(void)
 
 `Timer A register` will count at 32768 Hz, meaning it will tick 32768 times per second.
 
-`Timer A register` ~~will count at 32768 Hz, meaning TACCR\(Timer A Capture/Compare Register\) will increase 32768 per second~~.
-
 ## Timer Modes
 
 ![](../../.gitbook/assets/msp430f169_timer_modes.png)
 
-~~It seems like you should chose Up mode if you want to control your timer by using TACCR0.~~
+It seems like you should chose `UP mode` if you want to control your timer by using `TACCR0`.
 
 $$
 0ffff \approx 32768 \times 2 = 65536
@@ -127,7 +141,21 @@ $$
 
 ## Interrupt
 
-~~If you have set an Interrupt Service Routine, then that function will be called every time timer register overflows from 0xFFFF or TACCR0 back to zero.~~ 
+If you have set an Interrupt Service Routine, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`. 
+
+## Delay
+
+Use a Timer or Use a default function `__delay_cycles(x)`
+
+> `__delay_cycles(x)` is stopping in the code and waiting for `x MCLK cycles`.
+>
+> For example, if you are working at `1 MHz` in your code,
+>
+> `__delay_cycles(1000)` will halt the code for `1000 * 1/1 MHz`.
+>
+> It's OK for testing to use `__delay_cycles` but in a real program you shouldn't use it, since it really stops the whole program for that time. 
+>
+> If you are relying on `Interrupts` and `some time-critical code`, `__delay_cycles` will probably mess your code up.
 
 ## What about the codes above?
 
@@ -138,4 +166,8 @@ For this section, the program does not important, the theory does.
 {% embed url="https://embedded.fm/blog/ese101-msp430-timers" %}
 
 {% embed url="http://www.ocfreaks.com/msp430-timer-programming-tutorial/" %}
+
+{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/303024" %}
+
+
 
