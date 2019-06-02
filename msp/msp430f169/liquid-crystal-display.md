@@ -49,11 +49,134 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
 | BLA | Backlight positive supply |
 | BLK | Backlight Negative supply |
 
+## Codes
+
+```c
+#include  "msp430.h"
+
+#define CS1 P1OUT |= BIT0
+#define CS0 P1OUT &= BIT0
+#define SID1 P1OUT |= BIT1
+#define SID0 P1OUT &= ~BIT1
+#define SCLK1 P1OUT |= BIT2
+#define SCLK0 P1OUT &= ~BIT2
+
+void DelayUs2x(unsigned char t)
+{
+    while (--t)
+        ;
+}
+
+void delay_1ms(unsigned char t)
+{
+
+    while (t--)
+    {
+        //大致延时1mS
+        DelayUs2x(245);
+        DelayUs2x(245);
+    }
+}
+
+void sendbyte(unsigned char zdata)
+{
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+        if ((zdata << i) & 0x80)
+        {
+            SID1;
+        }
+        else
+        {
+            SID0;
+        }
+        SCLK0;
+        SCLK1;
+    }
+}
+
+void write_com(unsigned char cmdcode)
+{
+    CS1;
+    sendbyte(0xf8);   //1 1 1 1 RS RW 0   写操作RW=0 11111000写数据 11111010写指令
+    sendbyte(cmdcode & 0xf0);
+    sendbyte((cmdcode << 4) & 0xf0);
+    delay_1ms(1);
+    CS0;
+}
+
+void write_data(unsigned char Dispdata)
+{
+    CS1;
+    sendbyte(0xfa);
+    sendbyte(Dispdata & 0xf0);
+    sendbyte((Dispdata << 4) & 0xf0);
+    delay_1ms(1);
+    CS0;
+}
+
+void Put_String(unsigned int x, unsigned int y, unsigned char* s)
+{
+    switch (y)
+    {
+    case 1:
+        write_com(0x80 + x);
+        break;
+    case 2:
+        write_com(0x90 + x);
+        break;
+    case 3:
+        write_com(0x88 + x);
+        break;
+    case 4:
+        write_com(0x98 + x);
+        break;
+    default:
+        break;
+    }
+    while (*s > 0)
+    {
+        write_data(*s);
+        s++;
+        DelayUs2x(50);
+    }
+}
+
+void lcdinit()
+{
+    delay_1ms(200);
+    write_com(0x30);  //功能设定：基本指令集
+    delay_1ms(20);
+    write_com(0x0c);  //显示状态：整体显示，游标关
+    delay_1ms(20);
+    write_com(0x01);  //清空显示
+    delay_1ms(200);
+}
+
+int main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; //关闭看门狗
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+    lcdinit();
+    while (1)
+    {
+
+        Put_String(0, 1, "Hello, World!");
+        Put_String(0, 2, "My name is yingshaoxo.");
+    }
+}
+```
+
 ## References:
 
 {% embed url="https://circuitdigest.com/microcontroller-projects/graphical-lcd-interfacing-with-arduino" %}
 
 {% embed url="https://www.instructables.com/id/The-Secrets-of-an-Inexpensive-Ubiquitous-Chinese-L/" %}
+
+{% embed url="https://blog.csdn.net/coderwuqiang/article/details/9181853" %}
 
 
 
