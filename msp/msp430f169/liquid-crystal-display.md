@@ -31,6 +31,24 @@ The chip select signal from the master is used to select the slave.
 
 MOSI and MISO are the data lines. MOSI transmits data from the master to the slave and MISO transmits data from the slave to the master.
 
+## ST7920 LCD Pin-Map
+
+| Pin Name | **Description** |
+| :--- | :--- |
+| GND | Ground |
+| VCC | Input supply voltage \(2.7v to 5.5v, mostly 3.3v\) |
+| V0 | LCD bias voltage, for setting contrast |
+| RS \(CS\*\) | Register Select; 0 for instruction writing, 1 for data writing |
+| R/W \(SID\*\) | Read/Write control; 0 for write, 1 for read |
+| E \(SCLK\*\) | Enable trigger \(Start the LCD\) |
+| DB0 - DB7 | Data Pins \(used in parallel 8/4bit communication\) |
+| PSB | Interface selection; 0 for serial mode, 1 for parallel mode |
+| NC | Not connected \(Test pins\) |
+| RST | Reset Pin |
+| VOUT | LCD voltage doubler output. VOUT ≦ 7V. |
+| BLA | Backlight positive supply |
+| BLK | Backlight Negative supply |
+
 ## References:
 
 {% embed url="https://circuitdigest.com/microcontroller-projects/graphical-lcd-interfacing-with-arduino" %}
