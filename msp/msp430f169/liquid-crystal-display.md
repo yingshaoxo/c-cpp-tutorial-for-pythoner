@@ -147,19 +147,22 @@ void Put_String(unsigned int x, unsigned int y, unsigned char* s)
 void lcdinit()
 {
     delay_1ms(200);
-    write_com(0x30);  //功能设定：基本指令集
+    write_com(0x30);  // 功能设定：基本指令集
     delay_1ms(20);
-    write_com(0x0c);  //显示状态：整体显示，游标关
+    write_com(0x0c);  // 显示状态：整体显示，游标关
     delay_1ms(20);
-    write_com(0x01);  //清空显示
+    write_com(0x01);  // clean display
     delay_1ms(200);
 }
 
 int main(void)
 {
-    WDTCTL = WDTPW + WDTHOLD; //关闭看门狗
+    WDTCTL = WDTPW + WDTHOLD; // close watchdog
     P1DIR = 0xFF;
     P1OUT = 0x00;
+    
+    __delay_cycles(1000 * 1000); // delay for LCD to wake up
+    
     lcdinit();
     while (1)
     {

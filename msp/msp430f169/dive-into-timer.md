@@ -167,6 +167,8 @@ Use a Timer or Use a default function `__delay_cycles(x)`
 >
 > `__delay_cycles(1000)` will halt the code for `1000 * 1/1 MHz`.
 >
+> `__delay_cycles(1000*1000*1)` will halt `1000ms (1 second)`.
+>
 > It's OK for testing to use `__delay_cycles` but in a real program you shouldn't use it, since it really stops the whole program for that time. 
 >
 > If you are relying on `Interrupts` and `some time-critical code`, `__delay_cycles` will probably mess your code up.
