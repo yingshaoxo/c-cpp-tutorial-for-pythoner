@@ -140,7 +140,7 @@ Almost every LCD chip they have created is copied from other foreign countries.
 
 But they never say a word about its copyright or where it came from. You can't even know the original chip name.
 
-For example, `ST7920 LCD` , in china `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` like it's a type of LCD. But we both know it's nothing but screen resolution.
+For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` like it's a type of LCD. But we both know it's nothing but screen resolution.
 
 ## Codes
 
