@@ -33,23 +33,80 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
 
 ## ST7920 LCD Pin-Map
 
-| Pin Name | **Description** |
-| :--- | :--- |
-| GND | Ground |
-| VCC | Input supply voltage \(2.7v to 5.5v, mostly 3.3v\) |
-| V0 | LCD bias voltage, for setting contrast |
-| RS \(CS\*\) | Register Select; 0 for instruction writing, 1 for data writing |
-| R/W \(SID\*\) | Read/Write control; 0 for write, 1 for read |
-| E \(SCLK\*\) | Enable trigger \(Start the LCD\) |
-| DB0 - DB7 | Data Pins \(used in parallel 8/4bit communication\) |
-| PSB | Interface selection; 0 for serial mode, 1 for parallel mode |
-| NC | Not connected \(Test pins\) |
-| RST | Reset Pin |
-| VOUT | LCD voltage doubler output. VOUT ≦ 7V. |
-| BLA | Backlight positive supply |
-| BLK | Backlight Negative supply |
-
-## Codes
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:left">Pin Name</th>
+      <th style="text-align:left"><b>Description</b>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:left">GND</td>
+      <td style="text-align:left">Ground</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">VCC</td>
+      <td style="text-align:left">Input supply voltage (2.7v to 5.5v, mostly 3.3v)</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">V0</td>
+      <td style="text-align:left">LCD bias voltage, for contrast setting</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">RS (CS*)</td>
+      <td style="text-align:left">Register Select (Write Command or Write Data selection); 0 for instruction
+        writing, 1 for data writing</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">R/W (SID*)</td>
+      <td style="text-align:left">
+        <p><b>Parallel Mode</b>: Read/Write control; 0 for write, 1 for read.</p>
+        <p><b>Serial Mode</b>: Serial data input.</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">E (SCLK*)</td>
+      <td style="text-align:left">
+        <p><b>Parallel Mode</b>: Set 1 to Enable LCD, set 0 to disable LCD.</p>
+        <p><b>Serial Mode</b>: Serial clock. (may connected to a source clock)</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">DB0 - DB7</td>
+      <td style="text-align:left">Data Pins (used in <b>parallel mode</b> , 8/4bit)</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">PSB</td>
+      <td style="text-align:left">
+        <p>Interface selection:</p>
+        <p><b>Serial Mode</b>: 0</p>
+        <p><b>Parallel Mode</b>: 1</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align:left">NC</td>
+      <td style="text-align:left">Not connected (Test pins)</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">RST</td>
+      <td style="text-align:left">Reset Pin</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">VOUT</td>
+      <td style="text-align:left">LCD voltage doubler output. VOUT &#x2266; 7V.</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">BLA</td>
+      <td style="text-align:left">Backlight(Background brightness) positive power supply. (3.3V or 5V)</td>
+    </tr>
+    <tr>
+      <td style="text-align:left">BLK</td>
+      <td style="text-align:left">Backlight(Background brightness) Negative power supply. (0V or Ground)</td>
+    </tr>
+  </tbody>
+</table>## Codes
 
 ```c
 #include  "msp430.h"
