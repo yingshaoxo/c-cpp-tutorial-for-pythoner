@@ -4,7 +4,7 @@
 
 > LCD: Liquid-crystal display
 
-Here we gonna use `ST7920` to drive a `128x64 LCD`.
+Here we gonna use `ST7920` \(a LCD which has 128x64 pixels\)
 
 If you use `Arduino` for development, then you should use [u8glib](https://github.com/olikraus/u8glib) to finish this mission as quickly as possible.
 
@@ -56,21 +56,31 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
     </tr>
     <tr>
       <td style="text-align:left">RS (CS*)</td>
-      <td style="text-align:left">Register Select (Write Command or Write Data selection); 0 for instruction
-        writing, 1 for data writing</td>
+      <td style="text-align:left">
+        <p><b>Parallel Mode</b>: Register Select (write Command or write Data)</p>
+        <p>0: Select instruction register (write) or busy flag, address counter (read)</p>
+        <p>1: Select data register (write/read).</p>
+        <p>(0 for instruction writing, 1 for data writing)</p>
+        <p><b>Serial mode</b>: Chip Select</p>
+        <p>1: chip enabled</p>
+        <p>0: chip disabled.</p>
+        <p>(When chip is disabled, SID and SCLK should be set as &#x201C;H&#x201D;
+          or &#x201C;L&#x201D;. Transcient of SID and SCLK is not allowed.)</p>
+      </td>
     </tr>
     <tr>
       <td style="text-align:left">R/W (SID*)</td>
       <td style="text-align:left">
         <p><b>Parallel Mode</b>: Read/Write control; 0 for write, 1 for read.</p>
-        <p><b>Serial Mode</b>: Serial data input.</p>
+        <p><b>Serial Mode</b>: Serial Input Data. (<code>Serial Data Input</code> would
+          be better)</p>
       </td>
     </tr>
     <tr>
       <td style="text-align:left">E (SCLK*)</td>
       <td style="text-align:left">
         <p><b>Parallel Mode</b>: Set 1 to Enable LCD, set 0 to disable LCD.</p>
-        <p><b>Serial Mode</b>: Serial clock. (may connected to a source clock)</p>
+        <p><b>Serial Mode</b>: Serial Clock. (may connected to a source clock)</p>
       </td>
     </tr>
     <tr>
@@ -87,7 +97,7 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
     </tr>
     <tr>
       <td style="text-align:left">NC</td>
-      <td style="text-align:left">Not connected (Test pins)</td>
+      <td style="text-align:left">Not connected (Test pins), useless.</td>
     </tr>
     <tr>
       <td style="text-align:left">RST</td>
@@ -106,7 +116,33 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
       <td style="text-align:left">Backlight(Background brightness) Negative power supply. (0V or Ground)</td>
     </tr>
   </tbody>
-</table>## Codes
+</table>## What's the difference between Parallel Mode and Serial Mode?
+
+At High-level programming language, `Parallel Mode` will have better transfer performance.
+
+### Parallel Mode:
+
+You send data through multiple wire at same time.
+
+At here, I mean use `ST7920 LCD`, you have to connect `DB0 - DB7` to your `MSP430 board` .
+
+### Serial Mode:
+
+You send data just through one wire. Data will be sent one by one with time passing.
+
+At here, I mean use `ST7920 LCD`, you will use Pin `CS(RS), SID(R/W), SCLK(E), PSB`.
+
+## Complaint
+
+Chinese are so \*\*! \(What should I say? stupid or selfishness?\)
+
+Almost every LCD chip they have created is copied from other foreign countries.
+
+But they never say a word about its copyright or where it came from. You can't even know the original chip name.
+
+For example, `ST7920 LCD` , in china `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` like it's a type of LCD. But we both know it's nothing but screen resolution.
+
+## Codes
 
 ```c
 #include  "msp430.h"
