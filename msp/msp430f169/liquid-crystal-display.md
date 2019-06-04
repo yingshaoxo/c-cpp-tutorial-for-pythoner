@@ -90,7 +90,7 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
     <tr>
       <td style="text-align:left">PSB</td>
       <td style="text-align:left">
-        <p>Interface selection:</p>
+        <p>Parallel or Serial Binary (Interface selection):</p>
         <p><b>Serial Mode</b>: 0</p>
         <p><b>Parallel Mode</b>: 1</p>
       </td>
@@ -136,11 +136,11 @@ At here, I mean use `ST7920 LCD`, you will use Pin `CS(RS), SID(R/W), SCLK(E), P
 
 Chinese are so \*\*! \(What should I say? stupid or selfishness?\)
 
-Almost every LCD chip they have created is copied from other foreign countries.
+Almost every LCD chip they have created is copied from other countries.
 
-But they never say a word about its copyright or where it came from. You can't even know the original chip name.
+But they never say a word about its copyright or where it came from. You can't even know the original chip name from those product made in China.
 
-For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` like it's a type of LCD. But we both know it's nothing but screen resolution.
+For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` as a type of LCD. But we both know it's nothing but screen resolution.
 
 ## Codes
 
