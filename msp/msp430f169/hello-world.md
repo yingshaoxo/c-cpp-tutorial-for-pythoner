@@ -2,7 +2,7 @@
 
 ## Light up your first LED
 
-```text
+```c
 #include <msp430.h>
 
 int main(void)
