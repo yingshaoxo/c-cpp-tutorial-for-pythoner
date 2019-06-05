@@ -80,7 +80,8 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
       <td style="text-align:left">E (SCLK*)</td>
       <td style="text-align:left">
         <p><b>Parallel Mode</b>: Set 1 to Enable LCD, set 0 to disable LCD.</p>
-        <p><b>Serial Mode</b>: Serial Clock. (may connected to a source clock)</p>
+        <p><b>Serial Mode</b>: Serial Clock. (they use this to sync two device, so
+          they can transmit binary data bit by bit)</p>
       </td>
     </tr>
     <tr>
