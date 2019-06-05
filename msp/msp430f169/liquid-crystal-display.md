@@ -145,32 +145,25 @@ But they never say a word about its copyright or where it came from. You can't e
 
 For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` as a type of LCD. But we both know it's nothing but screen resolution.
 
-## Codes
+## Bad Codes \(It's written by Chinese people in the first place\)
 
 ```c
 #include  "msp430.h"
 
-#define CS1 P1OUT |= BIT0
+#define CS1 P1OUT |= BIT0 //RS
 #define CS0 P1OUT &= BIT0
-#define SID1 P1OUT |= BIT1
+#define SID1 P1OUT |= BIT1 //R/W
 #define SID0 P1OUT &= ~BIT1
-#define SCLK1 P1OUT |= BIT2
+#define SCLK1 P1OUT |= BIT2 //E
 #define SCLK0 P1OUT &= ~BIT2
-
-void DelayUs2x(unsigned char t)
-{
-    while (--t)
-        ;
-}
+// PSB connect to ground
 
 void delay_1ms(unsigned char t)
 {
-
     while (t--)
     {
-        //大致延时1mS
-        DelayUs2x(245);
-        DelayUs2x(245);
+        // delay for 1ms
+        __delay_cycles(1000);
     }
 }
 
@@ -180,6 +173,11 @@ void sendbyte(unsigned char zdata)
 
     for (i = 0; i < 8; i++)
     {
+        //1111 1000 & 1000 0000 = 1000 0000 = True
+        //1111 0000 & 1000 0000 = 1000 0000 = True
+        //1110 0000 & 1000 0000 = 1000 0000 = True
+        //...
+        //0000 0000 & 1000 0000 = 0000 0000 = False
         if ((zdata << i) & 0x80)
         {
             SID1;
@@ -193,12 +191,19 @@ void sendbyte(unsigned char zdata)
     }
 }
 
-void write_com(unsigned char cmdcode)
+void write_command(unsigned char cmdcode)
 {
     CS1;
-    sendbyte(0xf8);   //1 1 1 1 RS RW 0   写操作RW=0 11111000写数据 11111010写指令
+    sendbyte(0xf8);
+    //f8=1111 1000; if (DB0-7 = 1111 1000), then SET FUNCTION; if you have any question, check ST7920V30_eng.pdf
     sendbyte(cmdcode & 0xf0);
+    //f0=1111 0000; 30=0011 0000; 1111 0000 & 0011 0000 = 0011 0000; DISPLAY ON
+    //f0=1111 0000; 0c=0000 1100; 1111 0000 & 0000 1100 = 0000 0000; Useless
+    //f0=1111 0000; 01=0000 0001; 1111 0000 & 0000 0001 = 0000 0000; Useless
     sendbyte((cmdcode << 4) & 0xf0);
+    //0000 0000 & 1111 0000 = 0000 0000; Useless
+    //1100 0000 & 1111 0000 = 1100 0000; HOME (put cursor to origin)
+    //0001 0000 & 1111 0000 = 0001 0000; display, cursor, blink OFF
     delay_1ms(1);
     CS0;
 }
@@ -218,16 +223,16 @@ void Put_String(unsigned int x, unsigned int y, unsigned char* s)
     switch (y)
     {
     case 1:
-        write_com(0x80 + x);
+        write_command(0x80 + x);
         break;
     case 2:
-        write_com(0x90 + x);
+        write_command(0x90 + x);
         break;
     case 3:
-        write_com(0x88 + x);
+        write_command(0x88 + x);
         break;
     case 4:
-        write_com(0x98 + x);
+        write_command(0x98 + x);
         break;
     default:
         break;
@@ -236,18 +241,19 @@ void Put_String(unsigned int x, unsigned int y, unsigned char* s)
     {
         write_data(*s);
         s++;
-        DelayUs2x(50);
+        delay_1ms(1);
     }
 }
 
 void lcdinit()
 {
-    delay_1ms(200);
-    write_com(0x30);  // 功能设定：基本指令集
+    delay_1ms(1000);  // delay for LCD to wake up
+
+    write_command(0x30);  // 30=0011 0000; DISPLAY ON
     delay_1ms(20);
-    write_com(0x0c);  // 显示状态：整体显示，游标关
+    write_command(0x0c);  // 0c=0000 1100; HOME(put cursor to origin)
     delay_1ms(20);
-    write_com(0x01);  // clean display
+    //write_command(0x01);  // 01=0000 0001; display, cursor, blink OFF
     delay_1ms(200);
 }
 
@@ -256,17 +262,21 @@ int main(void)
     WDTCTL = WDTPW + WDTHOLD; // close watchdog
     P1DIR = 0xFF;
     P1OUT = 0x00;
-    
-    __delay_cycles(1000 * 1000); // delay for LCD to wake up
-    
+
     lcdinit();
+
     while (1)
     {
-
         Put_String(0, 1, "Hello, World!");
         Put_String(0, 2, "My name is yingshaoxo.");
     }
 }
+```
+
+## Good Codes \(It was written by me\(yingshaoxo\)\)
+
+```c
+// needs time to write
 ```
 
 ## References:
