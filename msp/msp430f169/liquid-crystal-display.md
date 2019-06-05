@@ -295,7 +295,7 @@ int main(void)
 
 ![](../../.gitbook/assets/st7920_timing_diagram_of_serial_mode_data_transfer.png)
 
-## Good Codes \(It was written by me\(yingshaoxo\)\)
+## Good Codes \(It was written by me\)
 
 ```c
 #include "msp430.h"
