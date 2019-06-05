@@ -117,7 +117,9 @@ MOSI and MISO are the data lines. MOSI transmits data from the master to the sla
       <td style="text-align:left">Backlight(Background brightness) Negative power supply. (0V or Ground)</td>
     </tr>
   </tbody>
-</table>## What's the difference between Parallel Mode and Serial Mode?
+</table>If anyone tries to say `bit` in computer science, that means `0 or 1`.
+
+## What's the difference between Parallel Mode and Serial Mode?
 
 At High-level programming language, `Parallel Mode` will have better transfer performance.
 
