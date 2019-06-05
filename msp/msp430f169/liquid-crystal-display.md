@@ -306,7 +306,7 @@ int main(void)
 #define SID0 P1OUT &= ~BIT1
 #define SCLK1 P1OUT |= BIT2 //E
 #define SCLK0 P1OUT &= ~BIT2
-// PSB connect to ground since we only use serial transmition mode
+// PSB connect to ground since we only use serial transition mode
 
 //data=00001100, always remember it's "d7 d6 d5 d4 d3 d2 d1 d0"
 //if you need to know how to set d7-d0, just check ST7920V30_eng.pdf
@@ -327,7 +327,7 @@ void delay(unsigned int t)
     }
 }
 
-void send_byte(unsigned char zdata)
+void send_byte(unsigned char eight_bits)
 {
     unsigned int i;
 
@@ -339,7 +339,7 @@ void send_byte(unsigned char zdata)
         //...
         //0000 0000 & 1000 0000 = 0000 0000 = False
         //The main purpose for this is to send a series of binary number from left to right
-        if ((zdata << i) & 0x80)
+        if ((eight_bits << i) & 0x80)
         {
             serial_data_input_1;
         }
@@ -347,6 +347,7 @@ void send_byte(unsigned char zdata)
         {
             serial_data_input_0;
         }
+        // We use this to simulate clock:
         serial_clock_0;
         serial_clock_1;
     }
@@ -356,7 +357,13 @@ void write_command(unsigned char command)
 {
     chip_select_1;
 
-    send_byte(0xf8);                  //f8=1111 1000; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 0; when RS = 0, Don't write d7-d0 to RAM
+    send_byte(0xf8);
+    /*
+    f8=1111 1000;
+    send five 1 first, so LCD will papare for receiving data; 
+    then R/W = 0, RS = 0; 
+    when RS = 0, won't write d7-d0 to RAM
+    */
     send_byte(command & 0xf0);        //send d7-d4
     send_byte((command << 4) & 0xf0); //send d3-d0
     /*
@@ -375,7 +382,14 @@ void write_data(unsigned char character)
 {
     chip_select_1;
 
-    send_byte(0xfa); //fa=1111 1010; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 1; when RS = 1, write d7-d0 to RAM
+    send_byte(0xfa);
+    /*
+    fa=1111 1010; 
+
+    send five 1 first, so LCD will papare for receiving data; 
+    then R/W = 0, RS = 1; 
+    when RS = 1, write d7-d0 to RAM
+    */
     send_byte(character & 0xf0);        //send d7-d4
     send_byte((character << 4) & 0xf0); //send d3-d0
     /*
