@@ -327,7 +327,7 @@ void delay(unsigned int t)
     }
 }
 
-void sendbyte(unsigned char zdata)
+void send_byte(unsigned char zdata)
 {
     unsigned int i;
 
@@ -356,9 +356,9 @@ void write_command(unsigned char command)
 {
     chip_select_1;
 
-    sendbyte(0xf8);                  //f8=1111 1000; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 0; when RS = 0, Don't write d7-d0 to RAM
-    sendbyte(command & 0xf0);        //send d7-d4
-    sendbyte((command << 4) & 0xf0); //send d3-d0
+    send_byte(0xf8);                  //f8=1111 1000; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 0; when RS = 0, Don't write d7-d0 to RAM
+    send_byte(command & 0xf0);        //send d7-d4
+    send_byte((command << 4) & 0xf0); //send d3-d0
     /*
     f0 = 1111 0000
 
@@ -375,10 +375,9 @@ void write_data(unsigned char character)
 {
     chip_select_1;
 
-    sendbyte(0xfa); //fa=1111 1010; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 1; when RS = 1, write d7-d0 to RAM
-    //sendbyte(0x07);
-    sendbyte(character & 0xf0);        //send d7-d4
-    sendbyte((character << 4) & 0xf0); //send d3-d0
+    send_byte(0xfa); //fa=1111 1010; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 1; when RS = 1, write d7-d0 to RAM
+    send_byte(character & 0xf0);        //send d7-d4
+    send_byte((character << 4) & 0xf0); //send d3-d0
     /*
     f0 = 1111 0000
 
@@ -419,7 +418,7 @@ void print_string(unsigned int x, unsigned int y, unsigned char *string)
     }
 }
 
-void lcdinit()
+void initialize_LCD()
 {
     delay(1000); // delay for LCD to wake up
 
@@ -428,8 +427,6 @@ void lcdinit()
     write_command(0x0c); // 0c=0000 1100; DISPLAY ON, cursor OFF, blink OFF
     delay(20);
     write_command(0x01); // 0c=0000 0001; CLEAR
-    delay(20);
-    //write_command(0x1c);  //Display shift left by 1, cursor also follows to shift.
 
     delay(200);
 }
@@ -440,17 +437,27 @@ int main(void)
     P1DIR = 0xFF;
     P1OUT = 0x00;
 
-    lcdinit();
+    unsigned char yingshaoxo[] = {
+        0xBA, 0xFA,
+        0xD3, 0xA2,
+        0xBD, 0xDC
+    };
+
+    initialize_LCD();
 
     while (1)
     {
-        print_string(0, 1, "Hello, World!");
-        print_string(0, 2, "My name is yingshaoxo.");
+        print_string(0, 1, "Hello, world!");
+        print_string(0, 2, "My name is: ");
+        print_string(0, 3, yingshaoxo);
+        print_string(0, 4, ".");
     }
 }
 ```
 
 You really should look at those comments I made, it's very important for you to understand what's going on with the above codes.
+
+If you want to display Non-English words, you have to use a third-party string tool.
 
 ## References:
 
@@ -460,5 +467,5 @@ You really should look at those comments I made, it's very important for you to 
 
 {% embed url="https://blog.csdn.net/coderwuqiang/article/details/9181853" %}
 
-
+{% embed url="https://www.lcd-module.de/eng/pdf/zubehoer/st7920\_chinese.pdf" %}
 
