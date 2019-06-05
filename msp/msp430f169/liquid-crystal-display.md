@@ -275,6 +275,8 @@ int main(void)
 
 ## Things you should know before you write your own LCD program
 
+![](../../.gitbook/assets/st7920_basic_instruction_set.png)
+
 **DDRAM** - stands for "Data Display Random Access Memory" and is the working data buffer of the display. Each character on the display has a corresponding **DDRAM** location and the byte loaded in **DDRAM** controls which character is displayed. 
 
 **ENTRY MODE:** typing mode
@@ -296,8 +298,159 @@ int main(void)
 ## Good Codes \(It was written by me\(yingshaoxo\)\)
 
 ```c
-// needs time to write
+#include "msp430.h"
+
+#define CS1 P1OUT |= BIT0 //RS
+#define CS0 P1OUT &= BIT0
+#define SID1 P1OUT |= BIT1 //R/W
+#define SID0 P1OUT &= ~BIT1
+#define SCLK1 P1OUT |= BIT2 //E
+#define SCLK0 P1OUT &= ~BIT2
+// PSB connect to ground since we only use serial transmition mode
+
+//data=00001100, always remember it's "d7 d6 d5 d4 d3 d2 d1 d0"
+//if you need to know how to set d7-d0, just check ST7920V30_eng.pdf
+
+#define chip_select_1 CS1 //RS
+#define chip_select_0 CS0
+#define serial_data_input_1 SID1 //R/W
+#define serial_data_input_0 SID0
+#define serial_clock_1 SCLK1 //E
+#define serial_clock_0 SCLK0
+
+void delay(unsigned int t)
+{
+    while (t--)
+    {
+        // delay for 1ms
+        __delay_cycles(1000);
+    }
+}
+
+void sendbyte(unsigned char zdata)
+{
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+    {
+        //1111 1000 & 1000 0000 = 1000 0000 = True
+        //1111 0000 & 1000 0000 = 1000 0000 = True
+        //1110 0000 & 1000 0000 = 1000 0000 = True
+        //...
+        //0000 0000 & 1000 0000 = 0000 0000 = False
+        //The main purpose for this is to send a series of binary number from left to right
+        if ((zdata << i) & 0x80)
+        {
+            serial_data_input_1;
+        }
+        else
+        {
+            serial_data_input_0;
+        }
+        serial_clock_0;
+        serial_clock_1;
+    }
+}
+
+void write_command(unsigned char command)
+{
+    chip_select_1;
+
+    sendbyte(0xf8);                  //f8=1111 1000; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 0; when RS = 0, Don't write d7-d0 to RAM
+    sendbyte(command & 0xf0);        //send d7-d4
+    sendbyte((command << 4) & 0xf0); //send d3-d0
+    /*
+    f0 = 1111 0000
+
+    if character = 1100 0011
+    first send 1100 0000 (d7-d4 0000)
+    then send 0011 0000 (d3-d0 0000)
+    */
+
+    delay(1);
+    chip_select_0; // when chip_select from 1 to 0, serial counter and data will be reset
+}
+
+void write_data(unsigned char character)
+{
+    chip_select_1;
+
+    sendbyte(0xfa); //fa=1111 1010; send five 1 first, so LCD will papare for receiving data; then R/W = 0, RS = 1; when RS = 1, write d7-d0 to RAM
+    //sendbyte(0x07);
+    sendbyte(character & 0xf0);        //send d7-d4
+    sendbyte((character << 4) & 0xf0); //send d3-d0
+    /*
+    f0 = 1111 0000
+
+    if character = 1100 0011
+    first send 1100 0000 (d7-d4 0000)
+    then send 0011 0000 (d3-d0 0000)
+    */
+
+    delay(1);
+    chip_select_0;
+}
+
+void print_string(unsigned int x, unsigned int y, unsigned char *string)
+{
+    switch (y)
+    {
+    case 1:
+        write_command(0x80 + x);
+        break;
+    case 2:
+        write_command(0x90 + x);
+        break;
+    case 3:
+        write_command(0x88 + x);
+        break;
+    case 4:
+        write_command(0x98 + x);
+        break;
+    default:
+        break;
+    }
+
+    while (*string > 0)
+    {
+        write_data(*string);
+        string++;
+        delay(1);
+    }
+}
+
+void lcdinit()
+{
+    delay(1000); // delay for LCD to wake up
+
+    write_command(0x30); // 30=0011 0000; use `basic instruction mode`, use `8-BIT interface`
+    delay(20);
+    write_command(0x0c); // 0c=0000 1100; DISPLAY ON, cursor OFF, blink OFF
+    delay(20);
+    write_command(0x01); // 0c=0000 0001; CLEAR
+    delay(20);
+    //write_command(0x1c);  //Display shift left by 1, cursor also follows to shift.
+
+    delay(200);
+}
+
+int main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; // close watchdog
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+
+    lcdinit();
+
+    while (1)
+    {
+        print_string(0, 1, "Hello, World!");
+        print_string(0, 2, "My name is yingshaoxo.");
+    }
+}
 ```
+
+You really should look at those comments I made, it's very important for you to understand what's going on with the above codes.
 
 ## References:
 
