@@ -125,7 +125,7 @@ At High-level programming language, `Parallel Mode` will have better transfer pe
 
 ### Parallel Mode:
 
-You send data through multiple wire at same time.
+You send data through multiple wire at the same time.
 
 At here, I mean use `ST7920 LCD`, you have to connect `DB0 - DB7` to your `MSP430 board` .
 
@@ -143,7 +143,7 @@ Almost every LCD chip they have created is copied from other countries.
 
 But they never say a word about its copyright or where it came from. You can't even know the original chip name from those product made in China.
 
-For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` as a type of LCD. But we both know it's nothing but screen resolution.
+For example, `ST7920 LCD`, in China `Taobao` store, you can only search it by typing `12864LCD`. They even treat `12864LCD` as a type of LCD. But we both know it's nothing but a screen resolution.
 
 ## Bad Codes \(It's written by Chinese people in the first place\)
 
@@ -281,7 +281,7 @@ int main(void)
 
 **ENTRY MODE:** typing mode
 
-**MPU**: Microprocessing Unit
+**MPU**: Micro-processing Unit
 
 > ST7920 is in serial interface mode when pull down PSB pin. Two pins \(SCLK and SID\) are used to complete the data transfer. Only write data is available. 
 >
