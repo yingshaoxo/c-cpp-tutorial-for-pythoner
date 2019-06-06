@@ -454,7 +454,8 @@ int main(void)
     unsigned char yingshaoxo[] = {
         0xBA, 0xFA,
         0xD3, 0xA2,
-        0xBD, 0xDC
+        0xBD, 0xDC，
+        0x00
     };
 
     initialize_LCD();
@@ -471,7 +472,54 @@ int main(void)
 
 You really should look at those comments I made, it's very important for you to understand what's going on with the above codes.
 
-If you want to display Non-English words, you have to use a third-party string tool.
+If you want to display Non-English words, you have to use a third-party string tool. Here I made one by myself: 
+
+```python
+from textwrap import wrap
+
+while 1:
+    string = input("\nEnter any Chinese characters here: ")
+    if (string.strip() != "") or string.count(" ") > 0:
+        try:
+            whole_hex_string = string.encode("gb2312").hex()
+            print(whole_hex_string)
+            result_list = wrap(whole_hex_string, 2)
+
+            template_start = "unsigned char gb2312_string[] = {"
+            template_center = ", ".join([f"0x{s}" for s in result_list]) + ", 0x00"
+            template_end = "};"
+            print(template_start + template_center + template_end)
+        except Exception as e:
+            print(e)
+
+"""
+while 1:
+    string = input("\nEnter any Chinese characters here: ")
+    if (string.strip() != "") or string.count(" ") > 0:
+        try:
+            result_list = []
+            for char in string:
+                hex_string = char.encode("gb2312").hex()
+                hex1 = hex_string[:2]
+                if hex1 != "":
+                    result_list.append(hex1)
+                else:
+                    result_list.append("00")
+                hex2 = hex_string[2:]
+                if hex2 != "":
+                    result_list.append(hex2)
+                else:
+                    result_list.append("00")
+
+            template_start = "unsigned char gb2312_string[] = {"
+            template_center = ", ".join([f"0x{s}" for s in result_list]) + ", 0x00"
+            template_end = "};"
+            print(template_start + template_center + template_end)
+        except Exception as e:
+            print(e)
+"""
+
+```
 
 ## References:
 
