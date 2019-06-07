@@ -16,6 +16,13 @@ int main() {
 }
 ```
 
+You  could do the same thing with Python:
+
+```python
+import os
+os.system("mkdir hi_yingshaoxo")
+```
+
 ## C++
 
 ```cpp
