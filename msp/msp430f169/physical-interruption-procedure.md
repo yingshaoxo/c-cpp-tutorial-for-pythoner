@@ -62,7 +62,7 @@ Interrupt Enable
 Interrupt Edge Select
 
 * work when pin from low to high: `P1IES = 0` \(`P1DIR &= BIT3`\)
-* work when pin from to low: `P1IES = 1` \(`P1DIR |= BIT3`\) 
+* work when pin from high to low: `P1IES = 1` \(`P1DIR |= BIT3`\) 
 
 ### GIE
 
