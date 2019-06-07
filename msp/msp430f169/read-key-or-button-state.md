@@ -91,11 +91,12 @@ void main(void)
 
 ```python
 while 1:
-    hexdec = input("\nEnter any number in Hexadecimal Format: ")
-    if hexdec.strip() != "":
+    hex_ = input("\nEnter any number in Hexadecimal Format: ")
+    if hex_.strip() != "":
         try:
-            dec = int(hexdec, 16)
-            print(hexdec, f"in Binary = {dec: b}")
+            decimal = int(hex_, 16)
+            binary = format(decimal, '08b')
+            print(hex_, f"in Binary = "+ binary[:4] + " " + binary[4:])
         except Exception as e:
             print(e)
 ```

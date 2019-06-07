@@ -14,6 +14,7 @@
     * [Dive into Timer](msp/msp430f169/dive-into-timer.md)
     * [Sing a song for me](msp/msp430f169/sing-a-song-for-me.md)
     * [Liquid-crystal display](msp/msp430f169/liquid-crystal-display.md)
+    * [Physical Interruption Procedure](msp/msp430f169/physical-interruption-procedure.md)
     * [Analog to Digital Converter](msp/msp430f169/adc.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
