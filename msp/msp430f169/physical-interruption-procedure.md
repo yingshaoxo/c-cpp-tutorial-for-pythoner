@@ -70,6 +70,13 @@ General Interrupt Enable
 
 What is general? Some pins like Digit IO from P1 to P2, 16 physical pins.
 
+### IFG
+
+Interrupt Flag
+
+* `IFG = 0`: No interrupt pending, which means you can just start another interrupt, it's OK.
+* `IFG = 1`: Interrupt pending, which means currently we are running the interrupt procedure, won't respond to a new interrupt request.
+
 ## References:
 
 {% embed url="https://embedded.fm/blog/ese101-msp430-interrupts" %}
