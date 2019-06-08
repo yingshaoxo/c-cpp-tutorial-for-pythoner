@@ -29,7 +29,7 @@ int main(void)
 
     P2DIR |= BIT0; // Set P1.0 to output direction
 
-    P1DIR &= BIT3; // Set P1.3 to input direction
+    //P1DIR &= BIT3; // Set P1.3 to input direction. Through I set this, you can't use it as input anyway.
     P1IE |= BIT3; // P1.3 interrupt enabled
     P1IES &= BIT3; // P1.3 Interrupt Edge Select low-to-high
 
@@ -47,7 +47,7 @@ int main(void)
 __interrupt void Port_1_interrupt_procedure(void)
 {
     P2OUT ^= BIT0;  // Toggle P2.0
-    P1IFG &= ~BIT3; // P1.3 IFG cleared
+    P1IFG &= ~BIT3; // clean P1.3 IFG
 }
 ```
 
@@ -61,8 +61,8 @@ Interrupt Enable
 
 Interrupt Edge Select
 
-* work when pin from low to high: `P1IES = 0` \(`P1DIR &= BIT3`\)
-* work when pin from high to low: `P1IES = 1` \(`P1DIR |= BIT3`\) 
+* work when pin from **low to high**: `P1IES = 0` \(`P1DIR &= BIT3`\)
+* work when pin from **high to low**: `P1IES = 1` \(`P1DIR |= BIT3`\) 
 
 ### GIE
 
