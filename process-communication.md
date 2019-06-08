@@ -207,7 +207,7 @@ int main() {
                 printf("\nwritting logs...\n");
                 char command[100];
                 sprintf(command, "echo '%s' > log/honey.log", message_child_get);
-                char result = system(command);
+                system(command); // run that command
                 write(pipe_descriptors2[1], child_response, sizeof(child_response));
             }
         }
