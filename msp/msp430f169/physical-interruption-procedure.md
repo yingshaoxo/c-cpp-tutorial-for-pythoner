@@ -77,6 +77,10 @@ Interrupt Flag
 * `IFG = 0`: No interrupt pending, which means you can just start another interrupt, it's OK.
 * `IFG = 1`: Interrupt pending, which means currently we are running the interrupt procedure, won't respond to a new interrupt request.
 
+You can use `IFG` to detect which exactly pin has raised that interrupt procedure since we only have `PORT1_VECTOR` and `PORT2_VECTOR` available for `ISR(interrupt service routine)`
+
+For example, `P1IFG & BIT3 == True` means pin `P1.3` caused an interruption at Port 1
+
 ## References:
 
 {% embed url="https://embedded.fm/blog/ese101-msp430-interrupts" %}
@@ -84,6 +88,8 @@ Interrupt Flag
 {% embed url="http://referencedesigner.com/blog/msp430-interrupt-tutorial/2082/" %}
 
 {% embed url="http://referencedesigner.com/blog/msp430-interrupt-rising-and-falling-edge/2089/" %}
+
+{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/305555" %}
 
 
 
