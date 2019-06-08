@@ -45,7 +45,7 @@ int main() {
 
 > In the C and C++ programming languages, _unistd.h_ is the name of the header file that provides access to the POSIX \(Linux\) operating system API.
 
-## Write and read message through a pipeline between a parent and his child processes
+## Write and read messages through a pipeline between a parent and his child processes
 
 ```c
 #include<stdio.h>
