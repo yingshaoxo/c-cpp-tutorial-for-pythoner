@@ -43,6 +43,8 @@ int main() {
 }
 ```
 
+unistd.h = unix standard \(library\).header
+
 > In the C and C++ programming languages, _unistd.h_ is the name of the header file that provides access to the POSIX \(Linux\) operating system API.
 
 ## Write and read messages through a pipeline between a parent and his child processes
