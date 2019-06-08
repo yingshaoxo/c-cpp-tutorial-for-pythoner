@@ -1,6 +1,6 @@
 # Make a Directory
 
-## C
+## Method 1 with C
 
 ```c
 #include<stdio.h>
@@ -21,6 +21,23 @@ You  could do the same thing with Python:
 ```python
 import os
 os.system("mkdir hi_yingshaoxo")
+```
+
+## Method 2 with C
+
+```c
+#include <stdio.h> 
+#include <sys/stat.h>
+
+void main() 
+{ 
+	if (mkdir("name_of_a_folder", 0777) == -1) {  // 0777 represents permission of "Everyone can read write and execute"
+		printf("Unable to create directory\n"); 
+    }
+	else { 
+		printf("Directory created\n"); 
+	} 
+} 
 ```
 
 ## C++
