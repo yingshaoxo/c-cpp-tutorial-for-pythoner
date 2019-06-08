@@ -97,8 +97,8 @@ Parent process runs first, child process runs second.
 #include<unistd.h>
 
 int main() {
-    char pipe1_message_list[20] = "Hi";
-    char pipe2_message_list[20] = "Hello";
+    char pipe1_message[20] = "Hi";
+    char pipe2_message[20] = "Hello";
     char message_we_get[20];
 
     int status_of_that_pipeline1;
@@ -126,8 +126,8 @@ int main() {
         close(pipe_descriptors1[0]); // Close the unwanted pipe1 read side, unnecessary
         close(pipe_descriptors2[1]); // Close the unwanted pipe2 write side, unnecessary
 
-        printf("In Parent: Writing to pipe 1...     Message is %s\n", pipe1_message_list);
-        write(pipe_descriptors1[1], pipe1_message_list, sizeof(pipe1_message_list));
+        printf("In Parent: Writing to pipe 1...     Message is %s\n", pipe1_message);
+        write(pipe_descriptors1[1], pipe1_message, sizeof(pipe1_message));
 
         read(pipe_descriptors2[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline2? Not sure
         printf("In Parent: Reading from pipe 2...   Message is %s\n", message_we_get);
@@ -139,8 +139,8 @@ int main() {
         read(pipe_descriptors1[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline1? Not sure
         printf("In Child: Reading from pipe 1...    Message is %s\n", message_we_get);
 
-        printf("In Child: Writing to pipe 2...      Message is %s\n", pipe2_message_list);
-        write(pipe_descriptors2[1], pipe2_message_list, sizeof(pipe2_message_list));
+        printf("In Child: Writing to pipe 2...      Message is %s\n", pipe2_message);
+        write(pipe_descriptors2[1], pipe2_message, sizeof(pipe2_message));
     }
 
     return 0;
@@ -154,7 +154,7 @@ int main() {
 #include<unistd.h> // for pipeline creating
 #include<sys/stat.h> // for using mkdir()
 #include<stdlib.h> // for using system()
-#include <string.h> // for using strcmp(). strcmp = string comparison
+#include<string.h> // for using strcmp(). strcmp = string comparison
 
 int main() {
     char parent_command[100] = "Create a folder for me, honey";
