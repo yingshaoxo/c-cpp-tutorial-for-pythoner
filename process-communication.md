@@ -8,7 +8,7 @@ Pipe = pipeline
 
 It's a pipeline who save message sequentially, like a [Queue](https://en.wikipedia.org/wiki/Queue_%28abstract_data_type%29). You can write or read a message to/from it.
 
-## Write and read messages through a Pipeline
+## Write and read messages through a pipeline
 
 ```c
 #include<stdio.h>
