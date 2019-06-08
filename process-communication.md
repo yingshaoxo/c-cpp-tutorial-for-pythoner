@@ -88,6 +88,8 @@ int main() {
 
 > Fork system call use for creates a new process, which is called _**child process**_, which runs concurrently with process \(which process called system call fork\) and this process is called _**parent process**_. After a new child process created, both processes will execute the next instruction following the fork\(\) system call.
 
+Parent process runs first, child process runs second.
+
 ## Two-way Communications
 
 ```c
