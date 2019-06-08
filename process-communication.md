@@ -125,14 +125,14 @@ int main() {
         printf("In Parent: Writing to pipe 1...     Message is %s\n", pipe1_message_list);
         write(pipe_descriptors1[1], pipe1_message_list, sizeof(pipe1_message_list));
 
-        read(pipe_descriptors2[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline2
+        read(pipe_descriptors2[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline2? Not sure
         printf("In Parent: Reading from pipe 2...   Message is %s\n", message_we_get);
 
     } else { // Child process
         close(pipe_descriptors1[1]); // Close the unwanted pipe1 write side, unnecessary
         close(pipe_descriptors2[0]); // Close the unwanted pipe2 read side, unnecessary
 
-        read(pipe_descriptors1[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline1
+        read(pipe_descriptors1[0], message_we_get, sizeof(message_we_get)); // it will be stuck until a new message has been sent to pipeline1? Not sure
         printf("In Child: Reading from pipe 1...    Message is %s\n", message_we_get);
 
         printf("In Child: Writing to pipe 2...      Message is %s\n", pipe2_message_list);
