@@ -352,7 +352,8 @@ __interrupt void ADC12_ISR(void)
     unsigned int raw_number = ADC12MEM0;
     char voltage_string[30];
 
-    float voltage = ((float)raw_number*(float)0.000818070);
+    //float voltage = ((float)raw_number*(float)0.000818070);
+    float voltage = (float)raw_number/(float)4095*(float)3.3;
     float_to_string(voltage, voltage_string, 4);
 
     char text[30];
@@ -364,7 +365,6 @@ __interrupt void ADC12_ISR(void)
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
-
 ```
 
 ## Some tables you may need
@@ -388,5 +388,7 @@ __interrupt void ADC12_ISR(void)
 
 {% embed url="https://davidhosk.wordpress.com/2017/03/01/embedded-systems-multimeter-project/" %}
 
-[https://blog.elevendroids.com/2013/06/code-recipe-reading-msp430-power-supply-voltage-level/](https://blog.elevendroids.com/2013/06/code-recipe-reading-msp430-power-supply-voltage-level/)
+{% embed url="https://blog.elevendroids.com/2013/06/code-recipe-reading-msp430-power-supply-voltage-level/" %}
+
+
 
