@@ -323,10 +323,10 @@ int main(void)
 
     initialize_LCD();
 
-    ADC12CTL0 = SHT0_3 + ADC12ON + REFON;            // Set Sample/Hold time ;  Turn On ADC12;  Reference ON
+    ADC12CTL0 = SHT0_3 + ADC12ON;     // Set Sample/Hold time ;  Turn On ADC12;  Reference ON
     ADC12CTL1 = SHP;                          // Use sampling timer | ADC12 Sample/Hold Pulse Mode
-    ADC12MCTL0 = SREF_1;                      // Vr+=Vref+, so you need to connect Vref+ to 5V voltage (You Must make sure that Reference is ON at above setting)
-    // if you don't set any reference-voltage, the Voltage-max(Vcc) will be 3.6V, the Vss will be 0V
+    ADC12MCTL0 = SREF_0;                      // posivetive_voltage_reference = AVcc = 3.3V
+    // if you don't set any reference-voltage, the Voltage-max(Vcc) will be 3.3V, the Vss will be 0V
     ADC12IE = BIT0;                           // Enable interrupt | ADC12 Interrupt Enable
     ADC12CTL0 |= ENC;                         // Conversion enabled | ADC12 Enable Conversion
     P6SEL |= BIT0;                            // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
@@ -339,7 +339,6 @@ int main(void)
         __delay_cycles(1000);               // Wait for ADC Ref to settle
         ADC12CTL0 |= ADC12SC;                   // Sampling open | ADC12 Start Conversion
         __bis_SR_register(CPUOFF + GIE);      // LPM0, ADC12_ISR will force exit
-        //digital_value = ADC12MEM0;               // Assigns the value held in ADC10MEM to the integer called digital_value
     }
 }
 
@@ -350,16 +349,22 @@ __interrupt void ADC12_ISR(void)
     // We assume that ADC12MEM0 is in a range of (0, 4095)
     delay(200);
 
+    unsigned int raw_number = ADC12MEM0;
     char voltage_string[30];
-    float voltage = ((float)ADC12MEM0/(float)4095) * (float)5;
+
+    float voltage = ((float)raw_number*(float)0.000818070);
     float_to_string(voltage, voltage_string, 4);
 
     char text[30];
     sprintf(text, "voltage = %s", voltage_string);
     print_string(0, 1, text);
 
+    sprintf(text, "voltage = %d", ADC12MEM0);
+    print_string(0, 2, text);
+
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
+
 ```
 
 ## Some tables you may need
@@ -368,8 +373,8 @@ __interrupt void ADC12_ISR(void)
 
 ![](../../.gitbook/assets/reference-selection-for-msp430f169.png)
 
-* Normally, AVcc means 3.6V, AVss means 0V.
-* If you use Vref, make sure to set voltage reference on by using `ADC12CTL0 = REFON;`
+* Normally, AVcc means 3.3V, AVss means 0V.
+* If you want to detect a voltage that greater than 3.3V, you have to use voltage-divider in an external circuit to convert the large voltage into 0-3.3V.
 
 ## References:
 
@@ -379,9 +384,9 @@ __interrupt void ADC12_ISR(void)
 
 {% embed url="https://coder-tronics.com/msp430-adc-tutorial/" %}
 
+{% embed url="https://www.circuitvalley.com/2012/02/msp430g2231-volt-meter-adc.html" %}
 
+{% embed url="https://davidhosk.wordpress.com/2017/03/01/embedded-systems-multimeter-project/" %}
 
-
-
-
+[https://blog.elevendroids.com/2013/06/code-recipe-reading-msp430-power-supply-voltage-level/](https://blog.elevendroids.com/2013/06/code-recipe-reading-msp430-power-supply-voltage-level/)
 
