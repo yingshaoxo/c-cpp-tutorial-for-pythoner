@@ -325,7 +325,7 @@ int main(void)
 
     ADC12CTL0 = SHT0_3 + ADC12ON;     // Set Sample/Hold time ;  Turn On ADC12;  Reference ON
     ADC12CTL1 = SHP;                          // Use sampling timer | ADC12 Sample/Hold Pulse Mode
-    ADC12MCTL0 = SREF_0;                      // posivetive_voltage_reference = AVcc = 3.3V
+    ADC12MCTL0 = SREF_0 + INCH_0;                      // posivetive_voltage_reference = AVcc = 3.3V ;  Anolog(ADC) Input Channel = A0, which is P6.0
     // if you don't set any reference-voltage, the Voltage-max(Vcc) will be 3.3V, the Vss will be 0V
     ADC12IE = BIT0;                           // Enable interrupt | ADC12 Interrupt Enable
     ADC12CTL0 |= ENC;                         // Conversion enabled | ADC12 Enable Conversion
@@ -352,8 +352,15 @@ __interrupt void ADC12_ISR(void)
     unsigned int raw_number = ADC12MEM0;
     char voltage_string[30];
 
-    //float voltage = ((float)raw_number*(float)0.000818070);
-    float voltage = (float)raw_number/(float)4095*(float)3.3;
+    // Get average_value of ADC12MEM0
+    int all = 0;
+    int i;
+    for (i=0; i<8; i++) {
+        all += ADC12MEM0;
+    }
+    int average_value = all/8;
+    
+    float voltage = (float)average_value/(float)4095*(float)5;
     float_to_string(voltage, voltage_string, 4);
 
     char text[30];
@@ -367,14 +374,21 @@ __interrupt void ADC12_ISR(void)
 }
 ```
 
+1. We use `ADC12CTL0` and `ADC12CTL1` to configure `ADC`
+2. `ADC12MCTL0` = `ADC12 Memory Control 0`. We use this to set `reference-voltage` or `analog input channel`. 
+3. `INCH_0` = `Analog Input Channel 0`. Once you set `ADC12MCTL0 = INCH_0`, the variable `ADC12MEM0` will only change according to `A0(Analog Input Channel 0)`. In this type of micro-controller, `A0` = `Port 6 and Pin 0` = `P6.0`.
+
 ## Some tables you may need
 
 ![](../../.gitbook/assets/adc12clk-cycles-for-msp430f169%20%281%29.png)
 
 ![](../../.gitbook/assets/reference-selection-for-msp430f169.png)
 
+![](../../.gitbook/assets/adc-input-channel-of-msp430f169.png)
+
 * Normally, AVcc means 3.3V, AVss means 0V.
 * If you want to detect a voltage that greater than 3.3V, you have to use voltage-divider in an external circuit to convert the large voltage into 0-3.3V.
+* You can get different analog value from `ADC12MEM0` by setting `INCH_x(Input Channel)`. For example, by using `ADC12MCTL0 = INCH_10`, you'll get temperature value from `ADC12MEM0`.
 
 ## References:
 
