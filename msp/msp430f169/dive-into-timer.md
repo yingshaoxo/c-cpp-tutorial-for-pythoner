@@ -78,7 +78,7 @@ void initTimer_A(void)
 __interrupt void Timer_A_CCR0_ISR(void)
 {
     custom_overflow_counting++;
-    if (custom_overflow_counting >= 2000)  // 2000ms
+    if (custom_overflow_counting >= 2000)  // 2000ms(millisecond)
     {
         P6OUT ^= BIT0;
         custom_overflow_counting = 0;
@@ -152,10 +152,10 @@ $$
 For example, if we use `a divider of 1`, `Input clock of 1MHz` and `TACCR0 = 1000-1 = 999`, we get:
 
 $$
-\text{Timer Period in Seconds} = \frac{\text{1} \times (999 + 1)}{1 \times 10^6} = 0.001\ Second = 1 \ ms = 1 \ microsecond
+\text{Timer Period in Seconds} = \frac{\text{1} \times (999 + 1)}{1 \times 10^6} = 0.001\ Second = 1 \ ms = 1 \ millisecond
 $$
 
-That is to say, the interrupt function will be called per 1 microsecond.
+That is to say, the interrupt function will be called per 1 millisecond.
 
 ## Delay
 
