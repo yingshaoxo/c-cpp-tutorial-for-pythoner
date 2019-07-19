@@ -661,6 +661,238 @@ int main(void)
 }
 ```
 
+## Successful Version with LCD and Interrupt and Timer
+
+```c
+#include <msp430.h>
+#include <stdio.h>
+
+// Definition for the LCD
+#define CS1 P1OUT |= BIT0 // RS
+#define CS0 P1OUT &= BIT0
+#define SID1 P1OUT |= BIT1 // R/W
+#define SID0 P1OUT &= ~BIT1
+#define SCLK1 P1OUT |= BIT2 // E
+#define SCLK0 P1OUT &= ~BIT2
+// PSB connect to ground since we only use serial transition mode
+
+// data=00001100, always remember it's "d7 d6 d5 d4 d3 d2 d1 d0"
+// if you need to know how to set d7-d0, just check ST7920V30_eng.pdf
+
+#define chip_select_1 CS1 // RS
+#define chip_select_0 CS0
+#define serial_data_input_1 SID1 // R/W
+#define serial_data_input_0 SID0
+#define serial_clock_1 SCLK1 // E
+#define serial_clock_0 SCLK0
+
+void delay(unsigned int t) {
+    while (t--) {
+        // delay for 1ms
+        __delay_cycles(1000);
+    }
+}
+
+void send_byte(unsigned char eight_bits) {
+    unsigned int i;
+
+    for (i = 0; i < 8; i++) {
+        // 1111 1000 & 1000 0000 = 1000 0000 = True
+        // 1111 0000 & 1000 0000 = 1000 0000 = True
+        // 1110 0000 & 1000 0000 = 1000 0000 = True
+        //...
+        // 0000 0000 & 1000 0000 = 0000 0000 = False
+        // The main purpose for this is to send a series of binary number from
+        // left to right
+        if ((eight_bits << i) & 0x80) {
+            serial_data_input_1;
+        } else {
+            serial_data_input_0;
+        }
+        // We use this to simulate clock:
+        serial_clock_0;
+        serial_clock_1;
+    }
+}
+
+void write_command(unsigned char command) {
+    chip_select_1;
+
+    send_byte(0xf8);
+    /*
+    f8=1111 1000;
+    send five 1 first, so LCD will papare for receiving data;
+    then R/W = 0, RS = 0;
+    when RS = 0, won't write d7-d0 to RAM
+    */
+    send_byte(command & 0xf0);        // send d7-d4
+    send_byte((command << 4) & 0xf0); // send d3-d0
+    /*
+    f0 = 1111 0000
+
+    if character = 1100 0011
+    first send 1100 0000 (d7-d4 0000)
+    then send 0011 0000 (d3-d0 0000)
+    */
+
+    delay(1);
+    chip_select_0; // when chip_select from 1 to 0, serial counter and data will
+                   // be reset
+}
+
+void write_data(unsigned char character) {
+    chip_select_1;
+
+    send_byte(0xfa);
+    /*
+    fa=1111 1010;
+
+    send five 1 first, so LCD will papare for receiving data;
+    then R/W = 0, RS = 1;
+    when RS = 1, write d7-d0 to RAM
+    */
+    send_byte(character & 0xf0);        // send d7-d4
+    send_byte((character << 4) & 0xf0); // send d3-d0
+    /*
+    f0 = 1111 0000
+
+    if character = 1100 0011
+    first send 1100 0000 (d7-d4 0000)
+    then send 0011 0000 (d3-d0 0000)
+    */
+
+    delay(1);
+    chip_select_0;
+}
+
+void print_string(unsigned int x, unsigned int y, unsigned char *string) {
+    switch (y) {
+    case 1:
+        write_command(0x80 + x);
+        break;
+    case 2:
+        write_command(0x90 + x);
+        break;
+    case 3:
+        write_command(0x88 + x);
+        break;
+    case 4:
+        write_command(0x98 + x);
+        break;
+    default:
+        break;
+    }
+
+    while (*string > 0) {
+        write_data(*string);
+        string++;
+        delay(1);
+    }
+}
+
+void initialize_LCD() {
+    delay(1000); // delay for LCD to wake up
+
+    write_command(0x30); // 30=0011 0000; use `basic instruction mode`, use
+                         // `8-BIT interface`
+    delay(20);
+    write_command(0x0c); // 0c=0000 1100; DISPLAY ON, cursor OFF, blink OFF
+    delay(20);
+    write_command(0x01); // 0c=0000 0001; CLEAR
+
+    delay(200);
+}
+
+// Definition for the ultrasonic sensor
+#define trigger_pin BIT3
+#define echo_pin BIT4
+
+#define set_trigger_pin_as_output P1DIR |= trigger_pin
+#define set_trigger_pin_to_0 P1OUT &= ~trigger_pin
+#define set_trigger_pin_to_1 P1OUT |= trigger_pin
+
+#define set_echo_pin_as_input P1DIR &= ~echo_pin
+#define input_from_echo_pin (P1IN & echo_pin)
+
+int miliseconds;
+int distance;
+long sensor;
+
+int initialize_ultrasonic_sensor() {
+    set_trigger_pin_as_output;
+    set_echo_pin_as_input;
+
+    CCTL0 = CCIE;            // CCR0 interrupt enabled
+    CCR0 = 1000;             // 1ms at 1mhz
+    TACTL = TASSEL_2 + MC_1; // SMCLK, upmode
+
+    P1IFG = 0x00;   // clear all interrupt flags
+    P1DIR |= BIT5;  // P1.5 as output for LED
+    P1OUT &= ~BIT5; // turn LED off
+
+    _BIS_SR(GIE); // global interrupt enable
+}
+
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & echo_pin) // is there interrupt pending?
+    {
+        if (!(P1IES & echo_pin)) // is this the rising edge?
+        {
+            TACTL |= TACLR; // clears timer A
+            miliseconds = 0;
+            P1IES |= echo_pin; // falling edge
+        } else {
+            sensor =
+                (long)miliseconds * 1000 + (long)TAR; // calculating ECHO lenght
+        }
+        P1IFG &= ~echo_pin; // clear flag
+    }
+}
+
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A(void) { miliseconds++; }
+
+int ultrasonic_detection() {
+    P1IE &= ~BIT0; // disable interupt
+
+    set_trigger_pin_as_output; // set pin as output
+    set_trigger_pin_to_1;      // generate pulse
+    __delay_cycles(10);        // for 10us
+    set_trigger_pin_to_0;      // stop pulse
+
+    set_echo_pin_as_input; // make pin P1.4 input (ECHO)
+    P1IFG = 0x00; // interrupt flag: clear flag just in case anything happened
+                  // before
+    P1IE |= echo_pin;      // interrupt enable: enable interupt on ECHO pin
+    P1IES &= ~echo_pin;    // interrupt edge selection: rising edge on ECHO pin
+    __delay_cycles(30000); // delay for 30ms (after this time echo times out
+                           // if there is no object detected)
+
+    distance = sensor / 58; // converting ECHO lenght into cm
+}
+
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
+
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+
+    initialize_LCD();
+    initialize_ultrasonic_sensor();
+
+    while (1) {
+        ultrasonic_detection();
+
+        char text[10];
+        sprintf(text, "%d", distance);
+        print_string(0, 4, text);
+    }
+
+    return 0;
+}
+```
+
 ## References:
 
 {% embed url="https://github.com/yingshaoxo/driver/blob/dbafd5f936facfd53a55293209c93da9aa5f8ca5/experience/old.ino\#L289" %}
@@ -672,6 +904,8 @@ int main(void)
 {% embed url="https://stackoverflow.com/questions/50346546/how-to-measure-frequency-in-arduino-using-pulsein-function" %}
 
 {% embed url="https://stackoverflow.com/questions/43651954/what-is-a-clock-cycle-and-clock-speed" %}
+
+{% embed url="http://karuppuswamy.com/wordpress/2015/03/12/msp430-launchpad-with-ultrasonic-distance-sensor-hc-sr04/" %}
 
 {% embed url="https://www.instructables.com/id/Ultrasonic-Sensor-with-MSP430-and-IARCCS/" %}
 
