@@ -661,7 +661,7 @@ int main(void)
 }
 ```
 
-## Successful Version with LCD and Interrupt and Timer
+## Successful Version with LCD and Interruption and Timer
 
 ```c
 #include <msp430.h>
