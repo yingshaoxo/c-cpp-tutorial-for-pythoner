@@ -20,5 +20,6 @@
     * [4x4 Keypad](msp/msp430f169/keypad.md)
     * [4x4 Keypad with LCD](msp/msp430f169/4x4-keypad-with-lcd.md)
     * [Analog to Digital Converter](msp/msp430f169/adc.md)
+    * [Ultrasonic Sensor](msp/msp430f169/ultrasonic-sensor.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
