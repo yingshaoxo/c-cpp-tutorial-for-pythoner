@@ -184,3 +184,7 @@ For this section, the program does not important, the theory does.
 
 {% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/303024" caption="" %}
 
+{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/407045?General-questions-concerning-timers-and-their-corresponding-interrupts" %}
+
+
+
