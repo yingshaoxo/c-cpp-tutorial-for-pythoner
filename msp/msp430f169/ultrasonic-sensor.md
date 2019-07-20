@@ -814,9 +814,9 @@ void initialize_LCD() {
 #define set_echo_pin_as_input P1DIR &= ~echo_pin
 #define input_from_echo_pin (P1IN & echo_pin)
 
-int miliseconds;
-int distance;
-long sensor;
+unsigned long int miliseconds;
+unsigned long int distance;
+unsigned long int sensor;
 
 int initialize_ultrasonic_sensor() {
     set_trigger_pin_as_output;
@@ -826,7 +826,7 @@ int initialize_ultrasonic_sensor() {
     CCR0 = 1000;             // 1ms at 1mhz
     TACTL = TASSEL_2 + MC_1; // SMCLK, upmode
 
-    P1IFG = 0x00;   // clear all interrupt flags
+    P1IFG = 0x00; // clear all interrupt flags
 
     _BIS_SR(GIE); // global interrupt enable
 }
@@ -843,6 +843,8 @@ __interrupt void Port_1(void) {
         } else {
             sensor =
                 (long)miliseconds * 1000 + (long)TAR; // calculating ECHO lenght
+            P1IES &=
+                ~echo_pin; // interrupt edge selection: rising edge on ECHO pin
         }
         P1IFG &= ~echo_pin; // clear flag
     }
@@ -854,20 +856,17 @@ __interrupt void Timer_A(void) { miliseconds++; }
 int ultrasonic_detection() {
     P1IE &= ~BIT0; // disable interupt
 
-    set_trigger_pin_as_output; // set pin as output
-    set_trigger_pin_to_1;      // generate pulse
-    __delay_cycles(10);        // for 10us
-    set_trigger_pin_to_0;      // stop pulse
+    set_trigger_pin_to_1; // generate pulse
+    __delay_cycles(10);   // for 10us
+    set_trigger_pin_to_0; // stop pulse
 
-    set_echo_pin_as_input; // make pin P1.4 input (ECHO)
     P1IFG = 0x00; // interrupt flag: clear flag just in case anything happened
                   // before
-    P1IE |= echo_pin;      // interrupt enable: enable interupt on ECHO pin
-    P1IES &= ~echo_pin;    // interrupt edge selection: rising edge on ECHO pin
-    __delay_cycles(30000); // delay for 30ms (after this time echo times out
-                           // if there is no object detected)
+    P1IE |= echo_pin; // interrupt enable: enable interupt on ECHO pin
+    //__delay_cycles(30000); // delay for 30ms (after this time echo times out
+    // if there is no object detected)
 
-    distance = sensor / 58; // converting ECHO lenght into cm
+    distance = sensor / 59; // converting ECHO lenght into cm
 }
 
 int main(void) {
@@ -880,6 +879,8 @@ int main(void) {
     initialize_ultrasonic_sensor();
 
     while (1) {
+        print_string(0, 4, "    "); // clear screen
+
         ultrasonic_detection();
 
         char text[10];
