@@ -790,6 +790,16 @@ void print_string(unsigned int x, unsigned int y, unsigned char *string) {
     }
 }
 
+void print_number(long int number) {
+    char text[20];
+    sprintf(text, "%d", number);
+    print_string(0, 4, text);
+}
+
+void screen_clean() {
+    write_command(0x01);
+}
+
 void initialize_LCD() {
     delay(1000); // delay for LCD to wake up
 
@@ -866,7 +876,7 @@ int ultrasonic_detection() {
     //__delay_cycles(30000); // delay for 30ms (after this time echo times out
     // if there is no object detected)
 
-    distance = sensor / 59; // converting ECHO lenght into cm
+    distance = sensor / 58; // converting ECHO lenght into cm
 }
 
 int main(void) {
@@ -879,13 +889,18 @@ int main(void) {
     initialize_ultrasonic_sensor();
 
     while (1) {
-        print_string(0, 4, "    "); // clear screen
+        //print_string(0, 4, "    "); // clear screen
+        screen_clean();
 
         ultrasonic_detection();
 
-        char text[10];
-        sprintf(text, "%d", distance);
-        print_string(0, 4, text);
+        distance = 1.424*distance;
+
+        if ((distance > 0) && (distance < 1000)) {
+            print_number(distance);
+        }
+
+        delay(200);
     }
 
     return 0;
