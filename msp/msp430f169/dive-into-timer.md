@@ -57,7 +57,6 @@ int main(void)
         delayMS(500); //Wait 0.5 Secs
     }
 }
-
 ```
 
 ```c
@@ -114,16 +113,16 @@ int main(void)
 ![](../../.gitbook/assets/msp430f169_timera_block_diagram.png)
 
 > TAR\(timerA register\) is a 16-bit counting register. This register is the thing that gets incremented \(or decremented\) as the timer counts up \(or down\). The “15” and “0” shows that the timer is 16-bits wide: it starts at bit 0 and goes up to bit 15; that’s 16 bits in total.
-
+>
 > The left part shows four signals: TACLK, ACLK, SMCLK, and INCLK. These are four different clock signals inside the MSP430. You select which of the four to use as the timer input clock using the _TASSEL_ bits inside the timer peripheral configuration registers. TASSEL stands for `Timer A Source-clock Select` .
-
+>
 > `IDx` can divide its input signal by 1, 2, 4, or 8. For example, if we set the ID divider to divide by 4 \(commonly written as “/4”\), it would take the input clock of 32768 Hz, divide it by 4, and the output would be 32768/4 = 8192 Hz. The divide by 1 \(or “/1”\) setting simply passes through the input signal unchanged.
-
+>
 > What’s the point of the divider?
 >
 > The micro-controller designer doesn’t know how fast \(or slow!\) you’ll want to run your timer, so they want to give you as much flexibility as possible.
 >
-> If they gave you no dividers at all, then you’d be stuck with whatever speed the four input clocks happened to be running at. 
+> If they gave you no dividers at all, then you’d be stuck with whatever speed the four input clocks happened to be running at.
 >
 > Having a divider is better than no options.
 
@@ -141,7 +140,7 @@ $$
 
 ## Interrupt
 
-If you have set an Interrupt Service Routine, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`. 
+If you have set an Interrupt Service Routine, then that function will be called every time `timer register` overflows from `0xFFFF or TACCR0` back to `zero`.
 
 ## Time cost for each Timer Interrupt \(or TACCR0 Overflow\)
 
@@ -169,7 +168,7 @@ Use a Timer or Use a default function `__delay_cycles(x)`
 >
 > `__delay_cycles(1000*1000*1)` will halt `1000ms (1 second)`.
 >
-> It's OK for testing to use `__delay_cycles` but in a real program you shouldn't use it, since it really stops the whole program for that time. 
+> It's OK for testing to use `__delay_cycles` but in a real program you shouldn't use it, since it really stops the whole program for that time.
 >
 > If you are relying on `Interrupts` and `some time-critical code`, `__delay_cycles` will probably mess your code up.
 
@@ -179,11 +178,9 @@ For this section, the program does not important, the theory does.
 
 ## References:
 
-{% embed url="https://embedded.fm/blog/ese101-msp430-timers" %}
+{% embed url="https://embedded.fm/blog/ese101-msp430-timers" caption="" %}
 
-{% embed url="http://www.ocfreaks.com/msp430-timer-programming-tutorial/" %}
+{% embed url="http://www.ocfreaks.com/msp430-timer-programming-tutorial/" caption="" %}
 
-{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/303024" %}
-
-
+{% embed url="https://e2e.ti.com/support/microcontrollers/msp430/f/166/t/303024" caption="" %}
 

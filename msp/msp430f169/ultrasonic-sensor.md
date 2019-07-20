@@ -53,60 +53,60 @@ void microsecond_level_of_delay(unsigned int t)
 }
 
 unsigned long int microseconds_to_clock_cycles(unsigned long int number) {
-	return number;
+    return number;
 }
 
 unsigned long int clock_cycles_to_microseconds(unsigned long int number) {
-	return number;
+    return number;
 }
 
 int initialize_ultrasonic_sensor() {
-	set_trigger_pin_as_output;
-	set_echo_pin_as_input;
+    set_trigger_pin_as_output;
+    set_echo_pin_as_input;
 }
 
 int pulseIn(int state, unsigned long timeout) {
-	// state is 0 or 1
+    // state is 0 or 1
 
-	unsigned long pluse_width = 0;
+    unsigned long pluse_width = 0;
 
-	// for time control
-	// convert the timeout from microseconds to a number of times through
-	// the initial loop; it takes 16 clock cycles per iteration.
-	unsigned long number_of_loops = 0;
-	unsigned long max_loops = microseconds_to_clock_cycles(timeout)/16;
+    // for time control
+    // convert the timeout from microseconds to a number of times through
+    // the initial loop; it takes 16 clock cycles per iteration.
+    unsigned long number_of_loops = 0;
+    unsigned long max_loops = microseconds_to_clock_cycles(timeout)/16;
 
-	// wait for any previous pulse to end
-	while (input_from_echo_pin == state)
-		if (number_of_loops++ == max_loops)
-			return 0;
-	
-	// wait for the pulse to start
-	while (input_from_echo_pin != state)
-		if (number_of_loops++ == max_loops)
-			return 0;
-	
-	// wait for the pulse to stop
-	while (input_from_echo_pin == state) {
-		if (number_of_loops++ == max_loops)
-			return 0;
+    // wait for any previous pulse to end
+    while (input_from_echo_pin == state)
+        if (number_of_loops++ == max_loops)
+            return 0;
 
-		pluse_width++;
-	}
+    // wait for the pulse to start
+    while (input_from_echo_pin != state)
+        if (number_of_loops++ == max_loops)
+            return 0;
 
-	// convert the reading to microseconds. The loop has been determined
-	// to be 20 clock cycles long and have about 16 clocks between the edge
-	// and the start of the loop. There will be some error introduced by
-	// the interrupt handlers.
-	return clock_cycles_to_microseconds(pluse_width * 21 + 16);
+    // wait for the pulse to stop
+    while (input_from_echo_pin == state) {
+        if (number_of_loops++ == max_loops)
+            return 0;
+
+        pluse_width++;
+    }
+
+    // convert the reading to microseconds. The loop has been determined
+    // to be 20 clock cycles long and have about 16 clocks between the edge
+    // and the start of the loop. There will be some error introduced by
+    // the interrupt handlers.
+    return clock_cycles_to_microseconds(pluse_width * 21 + 16);
 }
 
 int ultrasonic_detection() {
-	set_trigger_pin_to_0;
-	microsecond_level_of_delay(2);
-	set_trigger_pin_to_1;
-	microsecond_level_of_delay(20);
-	set_trigger_pin_to_0;
+    set_trigger_pin_to_0;
+    microsecond_level_of_delay(2);
+    set_trigger_pin_to_1;
+    microsecond_level_of_delay(20);
+    set_trigger_pin_to_0;
 
     unsigned long int duration = pulseIn(HIGH, 0);
 
@@ -120,9 +120,9 @@ int ultrasonic_detection() {
 
 int main(void)
 {
-	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
-	
-	return 0;
+    WDTCTL = WDTPW | WDTHOLD;    // stop watchdog timer
+
+    return 0;
 }
 ```
 
@@ -307,60 +307,60 @@ void microsecond_level_of_delay(unsigned int t)
 }
 
 unsigned long int microseconds_to_clock_cycles(unsigned long int number) {
-	return number;
+    return number;
 }
 
 unsigned long int clock_cycles_to_microseconds(unsigned long int number) {
-	return number;
+    return number;
 }
 
 int initialize_ultrasonic_sensor() {
-	set_trigger_pin_as_output;
-	set_echo_pin_as_input;
+    set_trigger_pin_as_output;
+    set_echo_pin_as_input;
 }
 
 int pulseIn(int state, unsigned long timeout) {
-	// state is 0 or 1
+    // state is 0 or 1
 
-	unsigned long pluse_width = 0;
+    unsigned long pluse_width = 0;
 
-	// for time control
-	// convert the timeout from microseconds to a number of times through
-	// the initial loop; it takes 16 clock cycles per iteration.
-	unsigned long number_of_loops = 0;
-	unsigned long max_loops = microseconds_to_clock_cycles(timeout)/16;
+    // for time control
+    // convert the timeout from microseconds to a number of times through
+    // the initial loop; it takes 16 clock cycles per iteration.
+    unsigned long number_of_loops = 0;
+    unsigned long max_loops = microseconds_to_clock_cycles(timeout)/16;
 
-	// wait for any previous pulse to end
-	while (input_from_echo_pin == state)
-		if (number_of_loops++ == max_loops)
-			return 0;
-	
-	// wait for the pulse to start
-	while (input_from_echo_pin != state)
-		if (number_of_loops++ == max_loops)
-			return 0;
-	
-	// wait for the pulse to stop
-	while (input_from_echo_pin == state) {
-		if (number_of_loops++ == max_loops)
-			return 0;
+    // wait for any previous pulse to end
+    while (input_from_echo_pin == state)
+        if (number_of_loops++ == max_loops)
+            return 0;
 
-		pluse_width++;
-	}
+    // wait for the pulse to start
+    while (input_from_echo_pin != state)
+        if (number_of_loops++ == max_loops)
+            return 0;
 
-	// convert the reading to microseconds. The loop has been determined
-	// to be 20 clock cycles long and have about 16 clocks between the edge
-	// and the start of the loop. There will be some error introduced by
-	// the interrupt handlers.
-	return clock_cycles_to_microseconds(pluse_width * 21 + 16);
+    // wait for the pulse to stop
+    while (input_from_echo_pin == state) {
+        if (number_of_loops++ == max_loops)
+            return 0;
+
+        pluse_width++;
+    }
+
+    // convert the reading to microseconds. The loop has been determined
+    // to be 20 clock cycles long and have about 16 clocks between the edge
+    // and the start of the loop. There will be some error introduced by
+    // the interrupt handlers.
+    return clock_cycles_to_microseconds(pluse_width * 21 + 16);
 }
 
 int ultrasonic_detection() {
-	set_trigger_pin_to_0;
-	microsecond_level_of_delay(2);
-	set_trigger_pin_to_1;
-	microsecond_level_of_delay(20);
-	set_trigger_pin_to_0;
+    set_trigger_pin_to_0;
+    microsecond_level_of_delay(2);
+    set_trigger_pin_to_1;
+    microsecond_level_of_delay(20);
+    set_trigger_pin_to_0;
 
     unsigned long int duration = pulseIn(HIGH, 0);
 
@@ -374,23 +374,23 @@ int ultrasonic_detection() {
 
 int main(void)
 {
-	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;    // stop watchdog timer
 
-	P1DIR = 0xFF;
+    P1DIR = 0xFF;
     P1OUT = 0x00;
 
-	initialize_LCD();
-	initialize_ultrasonic_sensor();
+    initialize_LCD();
+    initialize_ultrasonic_sensor();
 
-	while(1) {
-		int result = ultrasonic_detection();
+    while(1) {
+        int result = ultrasonic_detection();
 
-		char text[10];
-		sprintf(text, "%d", result);
-		print_string(0, 1, text);
-	}
-	
-	return 0;
+        char text[10];
+        sprintf(text, "%d", result);
+        print_string(0, 1, text);
+    }
+
+    return 0;
 }
 ```
 
@@ -578,56 +578,56 @@ void microsecond_level_of_delay(unsigned int t)
 }
 
 unsigned long int microseconds_to_clock_cycles(unsigned long int number) {
-	return number;
+    return number;
 }
 
 unsigned long int clock_cycles_to_microseconds(unsigned long int number) {
-	return number;
+    return number;
 }
 
 int initialize_ultrasonic_sensor() {
-	set_trigger_pin_as_output;
-	set_echo_pin_as_input;
+    set_trigger_pin_as_output;
+    set_echo_pin_as_input;
 }
 
 int high_pulseIn(unsigned long int timeout) {
     while(input_from_echo_pin == 0) {
     }
 
-	unsigned long int pluse_width = 0;
+    unsigned long int pluse_width = 0;
 
-	// for time control
-	// convert the timeout from microseconds to a number of times through
-	// the initial loop; it takes 16 clock cycles per iteration.
-	unsigned long int number_of_loops = 0;
-	unsigned long int max_loops = microseconds_to_clock_cycles(timeout)/16;
+    // for time control
+    // convert the timeout from microseconds to a number of times through
+    // the initial loop; it takes 16 clock cycles per iteration.
+    unsigned long int number_of_loops = 0;
+    unsigned long int max_loops = microseconds_to_clock_cycles(timeout)/16;
 
-	// input_from_echo_pin will be 0 when you cover it with a plane.
-	// it also means that 1 signal you have sent before is coming to you.
+    // input_from_echo_pin will be 0 when you cover it with a plane.
+    // it also means that 1 signal you have sent before is coming to you.
 
-	// wait for the pulse to start
-	while (input_from_echo_pin == 1) {
-		if (number_of_loops++ == max_loops) {
-	           return 0;
-		}
+    // wait for the pulse to start
+    while (input_from_echo_pin == 1) {
+        if (number_of_loops++ == max_loops) {
+               return 0;
+        }
 
         pluse_width++;
-	}
+    }
 
-	// convert the reading to microseconds. The loop has been determined
-	// to be 20 clock cycles long and have about 16 clocks between the edge
-	// and the start of the loop. There will be some error introduced by
-	// the interrupt handlers.
+    // convert the reading to microseconds. The loop has been determined
+    // to be 20 clock cycles long and have about 16 clocks between the edge
+    // and the start of the loop. There will be some error introduced by
+    // the interrupt handlers.
 
-	return clock_cycles_to_microseconds(pluse_width * 16);
+    return clock_cycles_to_microseconds(pluse_width * 16);
 }
 
 int ultrasonic_detection() {
-	set_trigger_pin_to_0;
-	microsecond_level_of_delay(15);
-	set_trigger_pin_to_1;
-	microsecond_level_of_delay(15);
-	set_trigger_pin_to_0;
+    set_trigger_pin_to_0;
+    microsecond_level_of_delay(15);
+    set_trigger_pin_to_1;
+    microsecond_level_of_delay(15);
+    set_trigger_pin_to_0;
 
     unsigned long int duration = high_pulseIn(1000000);
     duration = duration * 1000 * 1000;
@@ -639,25 +639,25 @@ int ultrasonic_detection() {
 
 int main(void)
 {
-	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;    // stop watchdog timer
 
-	P1DIR = 0xFF;
+    P1DIR = 0xFF;
     P1OUT = 0x00;
 
-	initialize_LCD();
-	initialize_ultrasonic_sensor();
+    initialize_LCD();
+    initialize_ultrasonic_sensor();
 
-	while(1) {
-		int result = ultrasonic_detection();
+    while(1) {
+        int result = ultrasonic_detection();
 
-		char text[10];
-		sprintf(text, "%d", result);
-		print_string(0, 4, text);
+        char text[10];
+        sprintf(text, "%d", result);
+        print_string(0, 4, text);
 
-		millisecond_level_of_delay(10);
-	}
+        millisecond_level_of_delay(10);
+    }
 
-	return 0;
+    return 0;
 }
 ```
 
@@ -827,8 +827,6 @@ int initialize_ultrasonic_sensor() {
     TACTL = TASSEL_2 + MC_1; // SMCLK, upmode
 
     P1IFG = 0x00;   // clear all interrupt flags
-    P1DIR |= BIT5;  // P1.5 as output for LED
-    P1OUT &= ~BIT5; // turn LED off
 
     _BIS_SR(GIE); // global interrupt enable
 }
@@ -895,19 +893,19 @@ int main(void) {
 
 ## References:
 
-{% embed url="https://github.com/yingshaoxo/driver/blob/dbafd5f936facfd53a55293209c93da9aa5f8ca5/experience/old.ino\#L289" %}
+{% embed url="https://github.com/yingshaoxo/driver/blob/dbafd5f936facfd53a55293209c93da9aa5f8ca5/experience/old.ino\#L289" caption="" %}
 
-{% embed url="https://www.arduino.cc/reference/en/language/functions/advanced-io/pulsein/" %}
+{% embed url="https://www.arduino.cc/reference/en/language/functions/advanced-io/pulsein/" caption="" %}
 
-{% embed url="https://forum.arduino.cc/index.php?topic=105289.0" %}
+{% embed url="https://forum.arduino.cc/index.php?topic=105289.0" caption="" %}
 
-{% embed url="https://stackoverflow.com/questions/50346546/how-to-measure-frequency-in-arduino-using-pulsein-function" %}
+{% embed url="https://stackoverflow.com/questions/50346546/how-to-measure-frequency-in-arduino-using-pulsein-function" caption="" %}
 
-{% embed url="https://stackoverflow.com/questions/43651954/what-is-a-clock-cycle-and-clock-speed" %}
+{% embed url="https://stackoverflow.com/questions/43651954/what-is-a-clock-cycle-and-clock-speed" caption="" %}
 
-{% embed url="http://karuppuswamy.com/wordpress/2015/03/12/msp430-launchpad-with-ultrasonic-distance-sensor-hc-sr04/" %}
+{% embed url="http://karuppuswamy.com/wordpress/2015/03/12/msp430-launchpad-with-ultrasonic-distance-sensor-hc-sr04/" caption="" %}
 
-{% embed url="https://www.instructables.com/id/Ultrasonic-Sensor-with-MSP430-and-IARCCS/" %}
+{% embed url="https://www.instructables.com/id/Ultrasonic-Sensor-with-MSP430-and-IARCCS/" caption="" %}
 
 k
 
