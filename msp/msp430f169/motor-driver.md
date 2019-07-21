@@ -18,12 +18,16 @@ It got three pins:
 | :--- | :--- | :--- | :--- |
 | 0 | 0 | whatever | stop |
 | 1 | 1 | whatever | still |
-| 1 | 0 | \(0, 1\] | forward |
-| 0 | 1 | \(0, 1\] | backward |
+| 1 | 0 | \(0, 1\] or PWM | forward |
+| 0 | 1 | \(0, 1\] or PWM | backward |
 
 `(0, 1]` means how long you set `Enable pin` to 1 during a period of time. For example, if we set `Enable pin` to `1` remaining 0.5 second, then set `Enable pin` to `0` remaining another 0.5 second, do this over and over again. In the end, we'll get an average speed for our motor. 
 
-## Codes
+PWM: Pulse Width Modulated Waveform
+
+![](../../.gitbook/assets/how_pwm_looks_like.png)
+
+## Codes without Speed Control
 
 ```c
 #include <msp430.h>
@@ -150,5 +154,35 @@ int main(void) {
 
     return 0;
 }
+```
+
+## Codes with PWM speed control
+
+### A simple demo demonstrated how PWM works in MSP430
+
+```c
+#include <msp430.h>
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop WDT
+
+    // Why I choose the following pins? Because the pin-map says they are TACLK(TA0-2) pin.
+    P1DIR |= (BIT6 | BIT7);   // P1.6 and P1.6 output
+    P1SEL |= (BIT6 | BIT7);   // P1.6 and P1.6 TA1/2 otions
+
+    CCR0 = 1000 - 1;          // PWM Period, for 1 MHz, 1000 means 1 ms. 1ms != 1us.
+    CCTL1 = OUTMOD_7;         // CCR1 reset/set
+    CCR1 = 800;               // CCR1 PWM duty cycle, output 80% Power
+    CCTL2 = OUTMOD_7;         // CCR2 reset/set
+    CCR2 = 500;               // CCR2 PWM duty cycle, output 50% Power
+
+    TACTL = TASSEL_2 + MC_1;  // SMCLK, up mode
+}
+```
+
+### Conbined with Motor Driver
+
+```c
+
 ```
 
