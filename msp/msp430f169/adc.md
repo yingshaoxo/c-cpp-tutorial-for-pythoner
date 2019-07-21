@@ -97,6 +97,39 @@ P6SEL = Port 6 Select Register
 
 `__bic_SR_register_on_exit(LPM0_bits)` : Exit Low Power Mode 0
 
+## A example without Interruption
+
+```c
+#include <msp430.h>
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop WDT
+
+    ADC12CTL0 = SHT0_2 + ADC12ON; // Set Sample/Hold time ;  Turn On ADC12
+    ADC12CTL1 = SHP;              // Use sampling timer | ADC12 Sample/Hold Pulse Mode
+    ADC12IE = BIT0;               // Enable interrupt | ADC12 Interrupt Enable
+    ADC12CTL0 |= ENC;             // Conversion enabled | ADC12 Enable Conversion
+
+    __delay_cycles(1000); // Wait for ADC Ref to settle
+    P6SEL |= BIT0;        // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
+    P1DIR |= BIT0;        // P1.0 output
+
+    for (;;) {
+        ADC12CTL0 |= ADC12SC; // Sampling open | ADC12 Start Conversion
+
+        while ((ADC12IFG & BIT0) == 0) {
+            // don't know if this is necessary
+        }
+
+        if (ADC12MEM0 < 0x7FF) {
+            P1OUT &= ~BIT0; // Clear P1.0 LED off
+        } else {
+            P1OUT |= BIT0; // Set P1.0 LED on
+        }
+    }
+}
+```
+
 ## Make a Voltage-Meter with ADC and LCD
 
 ```c
