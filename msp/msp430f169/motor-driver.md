@@ -11,7 +11,7 @@ In here, we gonna use `AQMH2407ND`. It's made by Chinese probably.
 It got three pins:
 
 * In1 \(input 1\)
-* Ln2 \(input 2\)
+* In2 \(input 2\)
 * En \(enable\)
 
 | Input 1 | Input 2 | Enable | Function |
