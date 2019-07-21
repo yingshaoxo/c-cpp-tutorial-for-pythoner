@@ -23,7 +23,7 @@ It got three pins:
 
 `(0, 1]` means how long you set `Enable pin` to 1 during a period of time. For example, if we set `Enable pin` to `1` remaining 0.5 second, then set `Enable pin` to `0` remaining another 0.5 second, do this over and over again. In the end, we'll get an average speed for our motor. 
 
-PWM: Pulse Width Modulated Waveform
+**PWM**: Pulse Width Modulated Waveform. It's kind of like `WriteAnalog(0-255)` in Arduino, but you have to do it by yourself.
 
 ![](../../.gitbook/assets/how_pwm_looks_like.png)
 
