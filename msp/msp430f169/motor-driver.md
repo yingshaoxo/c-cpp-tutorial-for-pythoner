@@ -334,3 +334,13 @@ int main(void) {
 }
 ```
 
+## References:
+
+```text
+http://www.ece.utep.edu/courses/web3376/Notes_files/ee3376-timer.ppt.pdf
+
+http://www.akelc.com/download/show_67.html
+
+Made by yingshaoxo
+```
+

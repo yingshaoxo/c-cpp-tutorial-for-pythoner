@@ -923,5 +923,5 @@ int main(void) {
 
 {% embed url="https://www.instructables.com/id/Ultrasonic-Sensor-with-MSP430-and-IARCCS/" caption="" %}
 
-k
+
 
