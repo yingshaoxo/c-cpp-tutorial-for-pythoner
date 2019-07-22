@@ -5,56 +5,52 @@
 
 unsigned int my_overflow_counting = 0;
 
-void initTimer_B(void)
-{
+void initTimer_B(void) {
     //Timer_B Configuration
-    TBCCR0 = 0; // Stop Timer
-    TBCCTL0 |= CCIE; //Enable interrupt for CCR0.
-    TBCTL = TBSSEL_2 + ID_0 + MC_1; //TimerB Source-clock Select SMCLK, SMCLK/1, UP Mode
+    TBCCR0 = 0;                     // Timer B Capture/Compare Register 0; Stop Timer
+    TBCCTL0 |= CCIE;                // Timer B Capture/Compare Control 0; Enable interrupt for CCR0.
+    TBCTL = TBSSEL_2 + ID_0 + MC_1; // Timer B Control; TimerB Source-clock Select SMCLK, SMCLK divided by 1, UP Mode
+
+    __enable_interrupt();
 }
 
-void delayMS(int microseconds)
-{
+void delayMS(int milliseconds) {
     my_overflow_counting = 0; //Reset Over-Flow counter
 
     TBCCR0 = 1000 - 1; //Start Timer, Compare value for Up Mode to get 1ms delay per loop
     //Total count = TBCCR0 + 1. Hence we need to subtract 1.
 
-    while (my_overflow_counting <= microseconds)
-    {
+    while (my_overflow_counting <= milliseconds) {
         ;
     }
 }
 
 //Timer ISR
 #pragma vector = TIMER0_B0_VECTOR
-__interrupt void Timer_B_CCR0_ISR(void)
-{
+__interrupt void Timer_B_CCR0_ISR(void) {
     my_overflow_counting++; //Increment Over-Flow Counter
 }
 
-int main(void)
-{
+int main(void) {
     WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
-    P6DIR |= BIT0; // Configure P6.0 as Output
-    P6OUT = 0x00; // clear port 6
+
+    P6DIR |= BIT0;            // Configure P6.0 as Output
+    P6OUT = 0x00;             // clear port 6
 
     // We assume SMCLK = 1MHz by default
     initTimer_B();
-    __enable_interrupt();
 
-    while (1)
-    {
+    while (1) {
         /*
         P6OUT ^= BIT0; //Drive P6.0 HIGH - LED1 ON
         delayMS(500); //Wait 0.5 Secs
         */
 
         P6OUT |= BIT0; //Drive P6.0 HIGH - LED1 ON
-        delayMS(500); //Wait 0.5 Secs
+        delayMS(500);  //Wait 0.5 Secs
 
         P6OUT &= ~BIT0; //Drive P6.0 LOW - LED1 OFF
-        delayMS(500); //Wait 0.5 Secs
+        delayMS(500);   //Wait 0.5 Secs
     }
 }
 ```
