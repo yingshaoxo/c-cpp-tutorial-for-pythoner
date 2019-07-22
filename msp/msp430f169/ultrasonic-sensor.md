@@ -824,7 +824,7 @@ void initialize_LCD() {
 #define set_echo_pin_as_input P1DIR &= ~echo_pin
 #define input_from_echo_pin (P1IN & echo_pin)
 
-unsigned long int miliseconds;
+unsigned long int milliseconds;
 unsigned long int distance;
 unsigned long int sensor;
 
@@ -832,9 +832,9 @@ int initialize_ultrasonic_sensor() {
     set_trigger_pin_as_output;
     set_echo_pin_as_input;
 
-    CCTL0 = CCIE;            // CCR0 interrupt enabled
-    CCR0 = 1000;             // 1ms at 1mhz
-    TACTL = TASSEL_2 + MC_1; // SMCLK, upmode
+    TACCTL0 |= CCIE;         // Timer A Capture/Compare Control 0; CCR0 interrupt enabled
+    TACCR0 = 1000;           // Timer A Capture/Compare Register 0; 1ms at 1mhz
+    TACTL = TASSEL_2 + MC_1; // Timer A Control; SMCLK, upmode
 
     P1IFG = 0x00; // clear all interrupt flags
 
@@ -843,25 +843,26 @@ int initialize_ultrasonic_sensor() {
 
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is there interrupt pending?
+    if (P1IFG & echo_pin) // is there interrupt pending? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
     {
-        if (!(P1IES & echo_pin)) // is this the rising edge?
+        if (!(P1IES & echo_pin)) // is this the rising edge? (P1IES & echo_pin) == 0
         {
             TACTL |= TACLR; // clears timer A
-            miliseconds = 0;
-            P1IES |= echo_pin; // falling edge
+            milliseconds = 0;
+            P1IES |= echo_pin; // set P1 echo_pin to falling edge interrupt: P1IES = 1
         } else {
             sensor =
-                (long)miliseconds * 1000 + (long)TAR; // calculating ECHO lenght
-            P1IES &=
-                ~echo_pin; // interrupt edge selection: rising edge on ECHO pin
+                (long)milliseconds * 1000 + (long)TAR; // calculating ECHO lenght; TAR is a us time unit at this case
+            P1IES &= ~echo_pin;                        // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
         }
-        P1IFG &= ~echo_pin; // clear flag
+        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
     }
 }
 
 #pragma vector = TIMER0_A0_VECTOR
-__interrupt void Timer_A(void) { miliseconds++; }
+__interrupt void Timer_A(void) {
+    milliseconds++;
+}
 
 int ultrasonic_detection() {
     P1IE &= ~BIT0; // disable interupt
@@ -870,8 +871,7 @@ int ultrasonic_detection() {
     __delay_cycles(10);   // for 10us
     set_trigger_pin_to_0; // stop pulse
 
-    P1IFG = 0x00; // interrupt flag: clear flag just in case anything happened
-                  // before
+    P1IFG = 0x00;     // interrupt flag: set to 0 to indicate No interrupt is pending
     P1IE |= echo_pin; // interrupt enable: enable interupt on ECHO pin
     //__delay_cycles(30000); // delay for 30ms (after this time echo times out
     // if there is no object detected)
@@ -894,7 +894,7 @@ int main(void) {
 
         ultrasonic_detection();
 
-        distance = 1.424*distance;
+        distance = 1.424 * distance;
 
         if ((distance > 0) && (distance < 1000)) {
             print_number(distance);
