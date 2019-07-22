@@ -22,6 +22,6 @@
     * [Analog to Digital Converter](msp/msp430f169/adc.md)
     * [Ultrasonic Sensor](msp/msp430f169/ultrasonic-sensor.md)
     * [Motor Driver](msp/msp430f169/motor-driver.md)
-    * [Frequency Detection](msp/msp430f169/frequency-detection.md)
+    * [Frequency or Speed Detection](msp/msp430f169/frequency-detection.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
