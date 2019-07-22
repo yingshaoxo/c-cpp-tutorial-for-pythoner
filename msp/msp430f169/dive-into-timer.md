@@ -1,5 +1,7 @@
 # Dive into Timer
 
+## Codes
+
 ```c
 #include <msp430.h>
 
@@ -100,6 +102,56 @@ int main(void)
     while (1)
     {
         ; // yingshaoxo tip: this loop will block the main process. So the interrupt function could work better.
+    }
+}
+```
+
+### Use Timer to output Square Wave
+
+```c
+/*
+P6.0 and P6,1 will output different squre wave
+*/
+#include <msp430.h>
+
+void initTimer_B(void) {
+    TBCCR0 = 0;      // Timer B Capture/Compare Register 0; Stop Timer
+    TBCCTL0 |= CCIE; // Timer B Capture/Compare Control 0; Enable interrupt for CCR0.
+
+    TBCTL = TBSSEL_2 + ID_0 + MC_1; // Timer B Control; TimerB Source-clock Select SMCLK, SMCLK = 1MHz, SMCLK divided by 1, up mode
+
+    TBCCR0 = 1000 - 1; //Start Timer, Compare value for Up Mode to get 1ms delay per loop
+
+    __enable_interrupt();
+}
+
+//Timer ISR
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B_CCR0_ISR(void) {
+}
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
+
+    P6DIR |= (BIT0 | BIT1); // Configure P6.0-6.2 as Output
+    P6OUT = 0x00;           // Clear port 6
+
+    initTimer_B();
+
+    while (1) {
+        // TBR: Timer B Counter Register
+        if (TBR < 0.2 * 999) {
+            P6OUT |= BIT0;
+        } else {
+            P6OUT &= ~BIT0;
+        }
+
+        // TBR: Timer B Counter Register
+        if (TBR < 0.5 * 999) {
+            P6OUT |= BIT1;
+        } else {
+            P6OUT &= ~BIT1;
+        }
     }
 }
 ```
