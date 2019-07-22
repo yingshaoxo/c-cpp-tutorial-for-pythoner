@@ -667,7 +667,11 @@ int main(void)
 #include <msp430.h>
 #include <stdio.h>
 
-// Definition for the LCD
+// ***************
+// ****************
+// SET LCD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
 #define CS1 P1OUT |= BIT0 // RS
 #define CS0 P1OUT &= BIT0
 #define SID1 P1OUT |= BIT1 // R/W
@@ -813,7 +817,11 @@ void initialize_LCD() {
     delay(200);
 }
 
-// Definition for the ultrasonic sensor
+// ***************
+// ****************
+// SET ultrasonic sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
 #define trigger_pin BIT3
 #define echo_pin BIT4
 
@@ -843,7 +851,7 @@ int initialize_ultrasonic_sensor() {
 
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is there interrupt pending? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    if (P1IFG & echo_pin) // is that interrupt request come frome echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
     {
         if (!(P1IES & echo_pin)) // is this the rising edge? (P1IES & echo_pin) == 0
         {
