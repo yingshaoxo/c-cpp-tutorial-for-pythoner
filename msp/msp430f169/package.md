@@ -522,6 +522,12 @@ int main(void) {
 ```c
 #include <msp430.h>
 
+// ***************
+// ****************
+// SET Motor Driver!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
+
 #define pin_of_motor1_driver_input1 BIT1
 #define pin_of_motor1_driver_input2 BIT2
 
@@ -671,6 +677,8 @@ int main(void) {
 ## Pulse length detector
 
 ```c
+#include <msp430.h>
+
 // ***************
 // ****************
 // SET Pulse time cost detector!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -753,7 +761,7 @@ int main(void) {
 
     while (1) {
         unsigned long int time_cost_in_us = pulse_time_cost_detection();
-        //print_string(0, 1, "One pulse length:");
+        //print_string(0, 1, "One pulse length");
         //print_float(0, 2, time_cost_in_us / (float)1000);
 
         //delay(1000 * 1);
