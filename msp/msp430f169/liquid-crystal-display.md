@@ -454,7 +454,7 @@ int main(void)
     unsigned char yingshaoxo[] = {
         0xBA, 0xFA,
         0xD3, 0xA2,
-        0xBD, 0xDC，
+        0xBD, 0xDC,
         0x00
     };
 
