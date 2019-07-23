@@ -182,6 +182,27 @@ int main(void) {
 }
 ```
 
+```text
+#define OUTMOD_0               (0*0x20u)      /* PWM output mode: 0 - output only */
+#define OUTMOD_1               (1*0x20u)      /* PWM output mode: 1 - set */
+#define OUTMOD_2               (2*0x20u)      /* PWM output mode: 2 - PWM toggle/reset */
+#define OUTMOD_3               (3*0x20u)      /* PWM output mode: 3 - PWM set/reset */
+#define OUTMOD_4               (4*0x20u)      /* PWM output mode: 4 - toggle */
+#define OUTMOD_5               (5*0x20u)      /* PWM output mode: 5 - Reset */
+#define OUTMOD_6               (6*0x20u)      /* PWM output mode: 6 - PWM toggle/set */
+#define OUTMOD_7               (7*0x20u)      /* PWM output mode: 7 - PWM reset/set */
+```
+
+Set: from 0 to 1
+
+Reset: from 1 to 0
+
+Toggle: inverse the value
+
+OUTMOD\_7: The output is reset when the timer counts to the TACCRx value. It is set when the timer counts to the TACCR0 value.
+
+> You could visit the `MSP430F169 Users Guide.pdf` to get more information.
+
 ### Combined with Motor Driver
 
 ```c
