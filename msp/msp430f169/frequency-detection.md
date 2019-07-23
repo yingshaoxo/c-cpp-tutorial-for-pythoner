@@ -1,6 +1,6 @@
 # Frequency or Speed Detection
 
-## \|Method 1
+## Method 1
 
 ```c
 #include <msp430.h>

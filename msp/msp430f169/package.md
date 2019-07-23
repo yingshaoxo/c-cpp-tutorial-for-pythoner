@@ -251,8 +251,8 @@ void main() {
 // ****************
 
 /*
-P2.0-3 need to connected to R1-R4
-P2.4-7 need to connected to C1-C4
+P5.0-3 need to connected to R1-R4
+P5.4-7 need to connected to C1-C4
 
 1	2	3	Return(or back)
 4	5	6	Menu
@@ -268,28 +268,28 @@ Enter: -4
 #define BIT_of_rows (BIT0 | BIT1 | BIT2 | BIT3)
 #define BIT_of_columns (BIT4 | BIT5 | BIT6 | BIT7)
 
-#define set_row_as_input P2DIR &= ~BIT_of_rows
-#define set_column_as_output P2DIR |= BIT_of_columns
+#define set_row_as_input P5DIR &= ~BIT_of_rows
+#define set_column_as_output P5DIR |= BIT_of_columns
 
-#define set_all_columns_to_0 P2OUT &= ~BIT_of_columns
-#define set_all_columns_to_1 P2OUT |= BIT_of_columns
+#define set_all_columns_to_0 P5OUT &= ~BIT_of_columns
+#define set_all_columns_to_1 P5OUT |= BIT_of_columns
 
-#define set_column1_to_0 P2OUT &= ~BIT4
-#define set_column1_to_1 P2OUT |= BIT4
+#define set_column1_to_0 P5OUT &= ~BIT4
+#define set_column1_to_1 P5OUT |= BIT4
 
-#define set_column2_to_0 P2OUT &= ~BIT5
-#define set_column2_to_1 P2OUT |= BIT5
+#define set_column2_to_0 P5OUT &= ~BIT5
+#define set_column2_to_1 P5OUT |= BIT5
 
-#define set_column3_to_0 P2OUT &= ~BIT6
-#define set_column3_to_1 P2OUT |= BIT6
+#define set_column3_to_0 P5OUT &= ~BIT6
+#define set_column3_to_1 P5OUT |= BIT6
 
-#define set_column4_to_0 P2OUT &= ~BIT7
-#define set_column4_to_1 P2OUT |= BIT7
+#define set_column4_to_0 P5OUT &= ~BIT7
+#define set_column4_to_1 P5OUT |= BIT7
 
-#define input_of_row1 (P2IN & BIT0) == 0 // when you pressing a key, it returns 0
-#define input_of_row2 (P2IN & BIT1) == 0
-#define input_of_row3 (P2IN & BIT2) == 0
-#define input_of_row4 (P2IN & BIT3) == 0
+#define input_of_row1 (P5IN & BIT0) == 0 // when you pressing a key, it returns 0
+#define input_of_row2 (P5IN & BIT1) == 0
+#define input_of_row3 (P5IN & BIT2) == 0
+#define input_of_row4 (P5IN & BIT3) == 0
 
 void millisecond_of_delay(unsigned int t) {
     while (t--) {
@@ -513,6 +513,251 @@ int main(void) {
 
     while (1) {
         catch_keypad_input();
+    }
+}
+```
+
+## Motor Driver
+
+```c
+#include <msp430.h>
+
+#define pin_of_motor1_driver_input1 BIT1
+#define pin_of_motor1_driver_input2 BIT2
+
+#define pin_of_motor2_driver_input1 BIT3
+#define pin_of_motor2_driver_input2 BIT4
+
+#define pin_of_motor1_driver_enable BIT6 // to give the power to the circuit
+#define pin_of_motor2_driver_enable BIT7 // to give the power to the circuit
+
+#define set_motor_control_pin_as_output P3DIR |= (pin_of_motor1_driver_input1 | pin_of_motor1_driver_input2 | pin_of_motor2_driver_input1 | pin_of_motor2_driver_input2)
+#define set_motor_enable_pin_as_output P1DIR |= (pin_of_motor1_driver_enable | pin_of_motor2_driver_enable)
+
+#define set_pin_of_motor1_driver_input1_to_0 \
+    P3OUT &= ~pin_of_motor1_driver_input1 // P3 means Port3, and Port3 has 8 \
+                                          // pins from P3.0 to P3.7
+#define set_pin_of_motor1_driver_input1_to_1 \
+    P3OUT |= pin_of_motor1_driver_input1 // P3 means Port3, and Port3 has 8 pins \
+                                         // from P3.0 to P3.7
+#define set_pin_of_motor1_driver_input2_to_0 \
+    P3OUT &= ~pin_of_motor1_driver_input2 // P3 means Port3, and Port3 has 8 \
+                                          // pins from P3.0 to P3.7
+#define set_pin_of_motor1_driver_input2_to_1 \
+    P3OUT |= pin_of_motor1_driver_input2 // P3 means Port3, and Port3 has 8 pins \
+                                         // from P3.0 to P3.7
+
+#define set_pin_of_motor2_driver_input1_to_0 \
+    P3OUT &= ~pin_of_motor2_driver_input1 // P3 means Port3, and Port3 has 8 \
+                                          // pins from P3.0 to P3.7
+#define set_pin_of_motor2_driver_input1_to_1 \
+    P3OUT |= pin_of_motor2_driver_input1 // P3 means Port3, and Port3 has 8 pins \
+                                         // from P3.0 to P3.7
+#define set_pin_of_motor2_driver_input2_to_0 \
+    P3OUT &= ~pin_of_motor2_driver_input2 // P3 means Port3, and Port3 has 8 \
+                                          // pins from P3.0 to P3.7
+#define set_pin_of_motor2_driver_input2_to_1 \
+    P3OUT |= pin_of_motor2_driver_input2 // P3 means Port3, and Port3 has 8 pins \
+                                         // from P3.0 to P3.7
+
+unsigned int a_period_of_time = 1000 - 1;
+
+void millisecond_level_of_delay(unsigned int t) {
+    while (t--) {
+        // delay for 1ms
+        __delay_cycles(1000);
+    }
+}
+
+void update_motor_speed(int which_motor, float speed) {
+    if (which_motor == 1) {
+        TACCR1 = (int)(a_period_of_time * speed);
+    } else if (which_motor == 2) {
+        TACCR2 = (int)(a_period_of_time * speed);
+    }
+}
+
+void initialize_motor_driver() {
+    set_motor_control_pin_as_output;
+    set_motor_enable_pin_as_output;
+
+    P1SEL |= (pin_of_motor1_driver_enable | pin_of_motor2_driver_enable); // Peripheral module function is selected for the pin 1.6 and pin 1.7
+
+    TACCR0 = a_period_of_time;
+
+    TACCTL1 = OUTMOD_7; //Timer A Capture/Compare Control 1; PWM output mode: 7 - PWM reset/set
+    update_motor_speed(1, 0);
+
+    TACCTL2 = OUTMOD_7; //Timer A Capture/Compare Control 2; PWM output mode: 7 - PWM reset/set
+    update_motor_speed(2, 0);
+
+    TACTL = TASSEL_2 + MC_1; // Timer A Control (control all); SMCLK Clock = 1MHz; Up mode, count from 0 to TACCR1
+}
+
+void stop_motor(int which_motor) {
+    if (which_motor == 1) {
+        set_pin_of_motor1_driver_input1_to_0;
+        set_pin_of_motor1_driver_input2_to_0;
+    } else if (which_motor == 2) {
+        set_pin_of_motor2_driver_input1_to_0;
+        set_pin_of_motor2_driver_input2_to_0;
+    }
+
+    update_motor_speed(1, 0);
+    update_motor_speed(2, 0);
+}
+
+void make_the_motor_still(int which_motor) {
+    if (which_motor == 1) {
+        set_pin_of_motor1_driver_input1_to_1;
+        set_pin_of_motor1_driver_input2_to_1;
+    } else if (which_motor == 2) {
+        set_pin_of_motor2_driver_input1_to_1;
+        set_pin_of_motor2_driver_input2_to_1;
+    }
+}
+
+void motor_forward(int which_motor, float speed) {
+    if (which_motor == 1) {
+        set_pin_of_motor1_driver_input1_to_1;
+        set_pin_of_motor1_driver_input2_to_0;
+    } else if (which_motor == 2) {
+        set_pin_of_motor2_driver_input1_to_1;
+        set_pin_of_motor2_driver_input2_to_0;
+    }
+
+    update_motor_speed(which_motor, speed);
+}
+
+void motor_backward(int which_motor, float speed) {
+    if (which_motor == 1) {
+        set_pin_of_motor1_driver_input1_to_0;
+        set_pin_of_motor1_driver_input2_to_1;
+    } else if (which_motor == 2) {
+        set_pin_of_motor2_driver_input1_to_0;
+        set_pin_of_motor2_driver_input2_to_1;
+    }
+
+    update_motor_speed(which_motor, speed);
+}
+
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
+
+    initialize_motor_driver();
+
+    while (1) {
+        motor_forward(1, 1);
+        millisecond_level_of_delay(1 * 1000);
+        motor_forward(1, 0.5);
+        millisecond_level_of_delay(1 * 1000);
+        motor_forward(1, 0.2);
+        millisecond_level_of_delay(1 * 1000);
+        stop_motor(1);
+        millisecond_level_of_delay(1 * 1000);
+
+        motor_backward(1, 1);
+        millisecond_level_of_delay(1 * 1000);
+        motor_backward(1, 0.5);
+        millisecond_level_of_delay(1 * 1000);
+        stop_motor(1);
+        millisecond_level_of_delay(1 * 1000);
+    }
+
+    return 0;
+}
+```
+
+## Pulse length detector
+
+```c
+// ***************
+// ****************
+// SET Pulse time cost detector!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
+
+/*
+Give P3.0 a wave with different frequency
+*/
+
+unsigned long int milliseconds_for_pulse_time_cost_detection = 0;
+unsigned long int length_of_pulse_cycle = 0;
+
+void initialize_timer_A(void) {
+    TACCR0 = 0;      // Timer A Capture/Compare Register 0; Stop Timer
+    TACCTL0 |= CCIE; // Timer A Capture/Compare Control 0; Enable interrupt for CCR0.
+
+    TACTL = TASSEL_2 + ID_0 + MC_1; // Timer A Control; TimerA Source-clock Select SMCLK, SMCLK = 1MHz, SMCLK divided by 1, up mode
+
+    TACCR0 = 1000 - 1; //Start Timer, Compare value for Up Mode to get 1ms delay per loop
+
+    __enable_interrupt();
+}
+
+//Timer ISR
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A_CCR0_ISR(void) {
+    milliseconds_for_pulse_time_cost_detection++;
+}
+
+void initialize_interrupt_for_pulse_detection_pin() {
+    P1SEL &= (~BIT5); // Set P1.5 SEL as GPIO
+    P1DIR &= (~BIT5); // Set P1.5 SEL as Input
+    P1IES &= (~BIT5); // Raising Edge 0 -> 1
+    P1IFG &= (~BIT5); // Clear interrupt flag for P1.5
+    P1IE &= (~BIT5);  // Disable interrupt for P1.5
+}
+
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & BIT5) // is that interrupt request come frome BIT5? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    {
+        if (!(P1IES & BIT5)) // is this the rising edge? (P1IES & BIT5) == 0
+        {
+            TACTL |= TACLR; // clears timer A
+            milliseconds_for_pulse_time_cost_detection = 0;
+            P1IES |= BIT5; // set P1.5 to falling edge interrupt: P1IES = 1
+        } else {
+            length_of_pulse_cycle = (long)milliseconds_for_pulse_time_cost_detection * 1000 + (long)TAR; // calculating a cycle length; TAR is a us time unit at this case
+            P1IES &= ~BIT5;                                                                              // interrupt edge selection: rising edge on pin1.5: P1IES = 0
+        }
+        P1IFG &= ~BIT5; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    }
+}
+
+unsigned long int pulse_time_cost_detection() {
+    P1IE &= ~BIT5;  // disable interupt
+    P1IFG &= ~BIT5; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    P1IE |= BIT5;   // interrupt enable
+
+    unsigned long int real_length_of_pulse_cycle = 2.8487 * length_of_pulse_cycle - 0.1926;
+    return real_length_of_pulse_cycle;
+}
+
+unsigned long int get_wheel_speed(unsigned long int how_many_holes_a_wheel_have, unsigned long int time_cost_for_one_pulse_in_us) {
+    unsigned long int time_cost_for_a_wheel_cycle = how_many_holes_a_wheel_have * time_cost_for_one_pulse_in_us;
+    float revolutions_per_minute = (float)60000000 / (float)time_cost_for_a_wheel_cycle; // minite speed of the wheel
+
+    return revolutions_per_minute;
+}
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
+
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+
+    initialize_timer_A();
+    initialize_interrupt_for_pulse_detection_pin();
+
+    while (1) {
+        unsigned long int time_cost_in_us = pulse_time_cost_detection();
+        //print_string(0, 1, "One pulse length:");
+        //print_float(0, 2, time_cost_in_us / (float)1000);
+
+        //delay(1000 * 1);
+        //screen_clean();
     }
 }
 ```

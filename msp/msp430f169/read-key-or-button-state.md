@@ -1,5 +1,32 @@
 # Read Key or Button State
 
+## Simple example
+
+```c
+/*
+The P5.1 LED will light up when you give 3.3V to P5.0
+*/
+#include <msp430.h>
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop WDT
+
+    P5DIR &= ~BIT0; // set P5.0 as input, BIT0=0x0001
+    P5DIR |= BIT1;  // set P5.0 as output, BIT1=0x0002
+
+    while (1) {
+        int input_value_from_port5_pin0 = (P5IN & BIT0); // if there's no 3.3v input at P5.0, (P5IN & BIT0) will return 0
+        if (input_value_from_port5_pin0 == 0) {
+            P5OUT |= BIT1; // P5.1 = 1, Light up the LED
+        } else {
+            P5OUT &= ~BIT1; // P5.1 = 0, Turn off the LED
+        }
+    }
+}
+```
+
+## Complex one
+
 ```c
 #include <msp430.h> 
 
