@@ -182,6 +182,8 @@ int main(void) {
 }
 ```
 
+#### Point 1
+
 ```text
 #define OUTMOD_0               (0*0x20u)      /* PWM output mode: 0 - output only */
 #define OUTMOD_1               (1*0x20u)      /* PWM output mode: 1 - set */
@@ -200,6 +202,16 @@ Reset: from 1 to 0
 Toggle: inverse the value
 
 OUTMOD\_7: The output is reset when the timer counts to the TACCRx value. It is set when the timer counts to the TACCR0 value.
+
+#### Point 2
+
+Only when you set `P1SEL to 1 (select peripheral function as pin function)`, then the `square pulse` will be generated from that pin.
+
+#### Point 3
+
+Different `TACCTL(Timer A Capture/Compare Control)` can set different `OUTMOD(output mode)`. 
+
+Then you have to set different `TACCR(Timer A Capture/Compare)` to generate different `square pulse`.
 
 > You could visit the `MSP430F169 Users Guide.pdf` to get more information.
 

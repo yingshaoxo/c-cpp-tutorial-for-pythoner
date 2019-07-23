@@ -23,6 +23,6 @@
     * [Ultrasonic Sensor](msp/msp430f169/ultrasonic-sensor.md)
     * [Motor Driver](msp/msp430f169/motor-driver.md)
     * [Frequency or Speed Detection](msp/msp430f169/frequency-detection.md)
-    * [Package](msp/msp430f169/package.md)
+    * [Package for Dynamic Motor Error Control](msp/msp430f169/package.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
