@@ -1,10 +1,11 @@
-# Package
+# Dynamic Motor Error Control
 
-## LCD
+## Codes
 
 ```c
 #include <msp430.h>
 #include <stdio.h>
+#include <string.h>
 
 // ***************
 // ****************
@@ -224,26 +225,6 @@ void initialize_LCD() {
     millisecond_of_delay(200);
 }
 
-void main() {
-    WDTCTL = WDTPW + WDTHOLD; // close watchdog
-
-    initialize_LCD();
-
-    while (1) {
-        print_string(0, 1, "Hi, my name is");
-        print_string(0, 2, "yingshaoxo");
-        print_number(0, 3, 1998);
-        print_float(0, 4, 3.29001);
-    }
-}
-```
-
-## Keypad
-
-```c
-#include <msp430.h>
-#include <stdio.h>
-
 // ***************
 // ****************
 // SET Keypad!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -291,13 +272,9 @@ Enter: -4
 #define input_of_row3 (P5IN & BIT2) == 0
 #define input_of_row4 (P5IN & BIT3) == 0
 
-void millisecond_of_delay(unsigned int t) {
-    while (t--) {
-        // delay for 1ms
-        __delay_cycles(1000);
-    }
-}
-
+int human_set_target_turns_per_minute = 20;
+int input_start = 0;
+char input_string[50];
 void handle_keypad_number(int number) {
     // Do what you want to do with numbers
 
@@ -312,7 +289,39 @@ void handle_keypad_number(int number) {
 	Menu: -2
 	Cancel: -3
 	Enter: -4
-	 */
+	*/
+
+    if (input_start == 0) {
+        screen_clean();
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+
+            input_start = 1;
+        }
+    } else if (input_start == 1) {
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+        } else if (number < 0) {
+            if (number == -3) {
+                print_string(0, 1, "Speed Input:__");
+                strcpy(input_string, "");
+                input_start = 0;
+            } else if (number == -4) {
+                int target_number = atoi(input_string);
+                human_set_target_turns_per_minute = target_number;
+
+                print_string(0, 1, "Speed Input:__");
+                strcpy(input_string, "");
+                input_start = 0;
+            }
+        }
+    }
 }
 
 int catch_keypad_input() {
@@ -506,22 +515,6 @@ void initialize_keypad() {
     set_all_columns_to_0; // by default, columns need to set to low
 }
 
-int main(void) {
-    WDTCTL = WDTPW + WDTHOLD; // close watchdog
-
-    initialize_keypad();
-
-    while (1) {
-        catch_keypad_input();
-    }
-}
-```
-
-## Motor Driver
-
-```c
-#include <msp430.h>
-
 // ***************
 // ****************
 // SET Motor Driver!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -567,19 +560,20 @@ int main(void) {
                                          // from P3.0 to P3.7
 
 unsigned int a_period_of_time = 1000 - 1;
-
-void millisecond_of_delay(unsigned int t) {
-    while (t--) {
-        // delay for 1ms
-        __delay_cycles(1000);
-    }
-}
+float previous_motor1_speed = 0;
+float previous_motor2_speed = 0;
 
 void update_motor_speed(int which_motor, float speed) {
+    if (speed > 1) {
+        speed = 1.0;
+    }
+
     if (which_motor == 1) {
         TACCR1 = (int)(a_period_of_time * speed);
+        previous_motor1_speed = speed;
     } else if (which_motor == 2) {
         TACCR2 = (int)(a_period_of_time * speed);
+        previous_motor2_speed = speed;
     }
 }
 
@@ -647,38 +641,6 @@ void motor_backward(int which_motor, float speed) {
     update_motor_speed(which_motor, speed);
 }
 
-int main(void) {
-    WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
-
-    initialize_motor_driver();
-
-    while (1) {
-        motor_forward(1, 1);
-        millisecond_of_delay(1 * 1000);
-        motor_forward(1, 0.5);
-        millisecond_of_delay(1 * 1000);
-        motor_forward(1, 0.2);
-        millisecond_of_delay(1 * 1000);
-        stop_motor(1);
-        millisecond_of_delay(1 * 1000);
-
-        motor_backward(1, 1);
-        millisecond_of_delay(1 * 1000);
-        motor_backward(1, 0.5);
-        millisecond_of_delay(1 * 1000);
-        stop_motor(1);
-        millisecond_of_delay(1 * 1000);
-    }
-
-    return 0;
-}
-```
-
-## Pulse length detector
-
-```c
-#include <msp430.h>
-
 // ***************
 // ****************
 // SET Pulse time cost detector!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -691,6 +653,7 @@ Give P3.0 a wave with different frequency
 
 unsigned long int milliseconds_for_pulse_time_cost_detection = 0;
 unsigned long int length_of_pulse_cycle = 0;
+unsigned long int does_the_next_pulse_come = 0;
 
 void initialize_timer_A(void) {
     TACCR0 = 0;      // Timer A Capture/Compare Register 0; Stop Timer
@@ -714,41 +677,23 @@ void initialize_interrupt_for_pulse_detection_pin() {
     P1DIR &= (~BIT5); // Set P1.5 SEL as Input
     P1IES &= (~BIT5); // Raising Edge 0 -> 1
     P1IFG &= (~BIT5); // Clear interrupt flag for P1.5
-    P1IE &= (~BIT5);  // Disable interrupt for P1.5
+    P1IE |= BIT5;     // interrupt enable
 }
 
-int enter_the_port_interrupt = 0;
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void) {
     if (P1IFG & BIT5) // is that interrupt request come frome BIT5? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
     {
         if (!(P1IES & BIT5)) // is this the rising edge? (P1IES & BIT5) == 0
         {
-
-            if (enter_the_port_interrupt == 0) {
-                TACTL |= TACLR; // clears timer A
-                milliseconds_for_pulse_time_cost_detection = 0;
-                //P1IES |= BIT5; // set P1.5 to falling edge interrupt: P1IES = 1
-
-                enter_the_port_interrupt = 1;
-            } else {
-                length_of_pulse_cycle = (long)milliseconds_for_pulse_time_cost_detection * 1000 + (long)TAR; // calculating a cycle length; TAR is a us time unit at this case
-                P1IES &= ~BIT5;                                                                              // interrupt edge selection: rising edge on pin1.5: P1IES = 0
-
-                enter_the_port_interrupt = 0;
-            }
+            //TACTL |= TACLR; // clears timer A
+            length_of_pulse_cycle = milliseconds_for_pulse_time_cost_detection * 1000;
+            milliseconds_for_pulse_time_cost_detection = 0;
+            does_the_next_pulse_come = 1;
+            //P1IES &= ~BIT5;                                                                              // interrupt edge selection: rising edge on pin1.5: P1IES = 0
         }
         P1IFG &= ~BIT5; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
     }
-}
-
-unsigned long int pulse_time_cost_detection() {
-    P1IE &= ~BIT5;  // disable interupt
-    P1IFG &= ~BIT5; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
-    P1IE |= BIT5;   // interrupt enable
-
-    unsigned long int real_length_of_pulse_cycle = 2.8487 * length_of_pulse_cycle - 0.1926;
-    return real_length_of_pulse_cycle;
 }
 
 unsigned long int get_wheel_speed(unsigned long int how_many_holes_a_wheel_have, unsigned long int time_cost_for_one_pulse_in_us) {
@@ -758,21 +703,57 @@ unsigned long int get_wheel_speed(unsigned long int how_many_holes_a_wheel_have,
     return revolutions_per_minute;
 }
 
+void dynamiclly_change_the_motor_speed(int which_motor, unsigned long int how_many_holes_a_wheel_have, int target_turns_per_minute) {
+    if (does_the_next_pulse_come == 1) {
+        unsigned long int target_pulse_cost = 60000000 / (how_many_holes_a_wheel_have * target_turns_per_minute);
+        unsigned long int real_pulse_cost = length_of_pulse_cycle * 1.38;
+
+        print_float(0, 2, target_pulse_cost / (float)1000);
+        print_float(0, 3, real_pulse_cost / (float)1000);
+
+        float unit = 0.03;
+        if (target_pulse_cost < real_pulse_cost) {
+            if (which_motor == 1) {
+                previous_motor1_speed = previous_motor1_speed + (previous_motor1_speed * unit);
+                update_motor_speed(which_motor, previous_motor1_speed);
+            } else {
+                previous_motor2_speed = previous_motor2_speed + (previous_motor2_speed * unit);
+                update_motor_speed(which_motor, previous_motor2_speed);
+            }
+            print_string(0, 4, "+");
+        } else {
+            if (which_motor == 1) {
+                previous_motor1_speed = previous_motor1_speed - (previous_motor1_speed * unit);
+                update_motor_speed(which_motor, previous_motor1_speed);
+            } else {
+                previous_motor2_speed = previous_motor2_speed - (previous_motor2_speed * unit);
+                update_motor_speed(which_motor, previous_motor2_speed);
+            }
+            print_string(0, 4, "-");
+        }
+
+        does_the_next_pulse_come = 0;
+    }
+}
+
 int main(void) {
     WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
 
-    P1DIR = 0xFF;
-    P1OUT = 0x00;
+    initialize_LCD();
+    initialize_keypad();
+    initialize_motor_driver();
 
     initialize_timer_A();
     initialize_interrupt_for_pulse_detection_pin();
 
+    print_string(0, 1, "Speed Input:__");
+    motor_forward(1, 0.5);
     while (1) {
-        unsigned long int time_cost_in_us = pulse_time_cost_detection();
-        //print_string(0, 1, "One pulse length");
-        //print_float(0, 2, time_cost_in_us / (float)1000);
+        catch_keypad_input();
 
-        //__delay_cycles(1000 * 1000 * 1);
+        dynamiclly_change_the_motor_speed(1, 20, human_set_target_turns_per_minute);
+
+        //millisecond_of_delay(200 * 1);
         //screen_clean();
     }
 }
