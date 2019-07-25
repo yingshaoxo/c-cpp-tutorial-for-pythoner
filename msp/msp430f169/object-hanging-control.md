@@ -7,7 +7,9 @@ The purpose of this section is to control an object altitude we are hanging.
 ```c
 #include <msp430.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 
 // ***************
 // ****************
@@ -704,8 +706,8 @@ int ultrasonic_detection() {
     __delay_cycles(10);   // for 10us
     set_trigger_pin_to_0; // stop pulse
 
-    P1IFG &= ~(echo_pin);          // interrupt flag: set to 0 to indicate No interrupt is pending
-    P1IE |= echo_pin;      // interrupt enable: enable interupt on ECHO pin
+    P1IFG &= ~(echo_pin); // interrupt flag: set to 0 to indicate No interrupt is pending
+    P1IE |= echo_pin;     // interrupt enable: enable interupt on ECHO pin
     //__delay_cycles(30000); // delay for 30ms (after this time echo times out if there is no object detected)
 
     unsigned long int distance = ultrasonic_sensor_value / 58; // converting ECHO lenght into cm
@@ -717,17 +719,32 @@ int ultrasonic_detection() {
     return distance;
 }
 
+float get_dynamic_approaching_speed(int target_distance, int real_distance, int approaching_length, float max_speed, float min_speed) {
+    // loss: distance between target value and real value
+    // approaching_length: when real value approaching this area, the speed need to get change to adapt the new situation
+    int loss = abs(target_distance - real_distance);
+    print_float(0, 3, loss);
+    float speed = loss/(approaching_length/max_speed);
+
+    if (speed < min_speed) {
+        speed = min_speed;
+    }
+
+    print_float(0, 4, speed);
+    return speed;
+}
+
 void dynamiclly_control_hanging_distance(int target_distance) {
-    int distance = ultrasonic_detection();
-    print_number(0, 2, distance);
+    int real_distance = ultrasonic_detection();
+    print_number(0, 2, real_distance);
 
-    float speed = 0.2;
+    float speed = get_dynamic_approaching_speed(target_distance, real_distance, 10, 0.2, 0.1);
 
-    if (target_distance > distance) {
+    if (target_distance > real_distance) {
         motor_forward(1, speed);
-    } else if (target_distance < distance) {
+    } else if (target_distance < real_distance) {
         motor_backward(1, speed);
-    } else if (target_distance == distance) {
+    } else if (target_distance == real_distance) {
         make_the_motor_still(1);
     }
 }
