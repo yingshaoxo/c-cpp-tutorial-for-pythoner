@@ -26,5 +26,6 @@
     * [Package](msp/msp430f169/package.md)
     * [Dynamic Motor Error Control](msp/msp430f169/dynamic-motor-error-control.md)
     * [Object Hanging Control](msp/msp430f169/object-hanging-control.md)
+    * [1-Axis Analog Accelerometer](msp/msp430f169/1-axis-analog-accelerometer.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 

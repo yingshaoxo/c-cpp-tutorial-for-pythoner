@@ -100,6 +100,10 @@ P6SEL = Port 6 Select Register
 ## A example without Interruption
 
 ```c
+/*
+If you give P6.0 5V, P6.1 will go high.
+If you give P6.0 0V, P6.1 will go low.
+*/
 #include <msp430.h>
 
 int main(void) {
@@ -107,25 +111,27 @@ int main(void) {
 
     ADC12CTL0 = SHT0_2 + ADC12ON; // Set Sample/Hold time ;  Turn On ADC12
     ADC12CTL1 = SHP;              // Use sampling timer | ADC12 Sample/Hold Pulse Mode
-    ADC12IE = BIT0;               // Enable interrupt | ADC12 Interrupt Enable
+    //ADC12IE = BIT0;               // Enable interrupt | ADC12 Interrupt Enable
     ADC12CTL0 |= ENC;             // Conversion enabled | ADC12 Enable Conversion
 
     __delay_cycles(1000); // Wait for ADC Ref to settle
     P6SEL |= BIT0;        // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
-    P1DIR |= BIT0;        // P1.0 output
+    P6DIR |= BIT1;        // Set P6.1 as output
 
     for (;;) {
         ADC12CTL0 |= ADC12SC; // Sampling open | ADC12 Start Conversion
 
         while ((ADC12IFG & BIT0) == 0) {
-            // don't know if this is necessary
+            // If no new value was sent to ADC12MEM0, we wait here.
         }
 
         if (ADC12MEM0 < 0x7FF) {
-            P1OUT &= ~BIT0; // Clear P1.0 LED off
+            P6OUT &= ~BIT1; // Clear P1.0 LED off
         } else {
-            P1OUT |= BIT0; // Set P1.0 LED on
+            P6OUT |= BIT1; // Set P1.0 LED on
         }
+
+        ADC12IFG &= ~BIT0; // set ADC interrupt flag to 0. After a new analog value has been giving to ADC12MEM0, ADC12IFG will be set to 1 automatically.
     }
 }
 ```
