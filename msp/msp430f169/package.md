@@ -275,6 +275,7 @@ Menu: -2
 Cancel: -3
 Enter: -4
 */
+
 #define BIT_of_rows (BIT0 | BIT1 | BIT2 | BIT3)
 #define BIT_of_columns (BIT4 | BIT5 | BIT6 | BIT7)
 
@@ -535,6 +536,14 @@ int main(void) {
 // ***************
 // ****************
 // SET Motor Driver!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// 
+// Input 1: P3.1
+// Input 2: P3.2
+// Input 3: P3.3
+// Input 4: P3.4
+// 
+// Enable 1: P1.6
+// Enable 2: P1.7
 // ***************
 // ****************
 
@@ -899,6 +908,7 @@ int main(void) {
 // ***************
 // ****************
 // SET Voltage Sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Receiving analog value from P6.0
 // ***************
 // ****************
 
