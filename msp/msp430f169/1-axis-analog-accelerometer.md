@@ -303,8 +303,6 @@ int main(void) {
 
         float angle = map_range(value, 395, 3536, -90, 90);
         print_float(0, 2, angle);
-        print_number(0, 3, -2);
-        print_float(0, 4, -3.3);
     }
 }
 ```

@@ -935,12 +935,6 @@ float map_range(float value, float fromLow, float fromHigh, float toLow, float t
     float target_value = ((toHigh - toLow) / (fromHigh - fromLow)) * (value - fromLow) + toLow;
 
     return target_value;
-}float map_range(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
-    // A function just like map() in arduino
-    float from_range_length = fromHigh - fromLow;
-    float to_reange_length = toHigh - toLow;
-    float target_value = (from_range_length / to_reange_length) * (value - fromLow) + toLow;
-    return target_value;
 }
 
 int main(void) {
