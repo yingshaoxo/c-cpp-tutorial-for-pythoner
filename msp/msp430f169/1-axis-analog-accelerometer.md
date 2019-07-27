@@ -21,6 +21,8 @@ It will act like this:
 ```c
 #include <msp430.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // ***************
 // ****************
@@ -216,7 +218,15 @@ void float_to_string(float n, char *res, int afterpoint) {
 
 void print_float(int x, int y, float number) {
     char text[20];
-    float_to_string(number, text, 4);
+    if (number < 0){
+        number = abs(number);
+        char text2[20];
+        strcpy(text, "-");
+        float_to_string(number, text2, 4);
+        strcat(text, text2);
+    } else {
+        float_to_string(number, text, 4);
+    }
     print_string(x, y, text);
 }
 
@@ -240,66 +250,62 @@ void initialize_LCD() {
     millisecond_of_delay(200);
 }
 
+// ***************
+// ****************
+// SET Voltage Sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
+
+void initialize_voltage_sensor() {
+    ADC12CTL0 = SHT0_2 + ADC12ON; // Set Sample/Hold time ;  Turn On ADC12
+    ADC12CTL1 = SHP;              // Use sampling timer | ADC12 Sample/Hold Pulse Mode
+    //ADC12IE = BIT0;               // Enable interrupt | ADC12 Interrupt Enable
+    ADC12CTL0 |= ENC; // Conversion enabled | ADC12 Enable Conversion
+
+    __delay_cycles(1000); // Wait for ADC Ref to settle
+    P6SEL |= BIT0;        // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
+}
+
+float get_value_from_voltage_sensor() {
+    ADC12CTL0 |= ADC12SC; // Sampling open | ADC12 Start Conversion
+
+    while ((ADC12IFG & BIT0) == 0) {
+        // If no new value was sent to ADC12MEM0, we wait here.
+    }
+
+    ADC12IFG &= ~BIT0; // set ADC interrupt flag to 0. After a new analog value has been giving to ADC12MEM0, ADC12IFG will be set to 1 automatically.
+
+    return ADC12MEM0;
+}
+
 float map_range(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
-	// A function just like map() in arduino
-	float from_range_length = fromHigh - fromLow;
-	float to_reange_length = toHigh - toLow;
-	float target_value = (from_range_length / to_reange_length) * (value - fromLow) + toLow;
-	return target_value;
+    // A function just like map() in arduino
+    if (value < fromLow) {
+        value = fromLow;
+    } else if (value > fromHigh) {
+        value = fromHigh;
+    }
+
+    float target_value = ((toHigh - toLow) / (fromHigh - fromLow)) * (value - fromLow) + toLow;
+
+    return target_value;
 }
 
 int main(void) {
     WDTCTL = WDTPW + WDTHOLD; // Stop WDT
 
     initialize_LCD();
+    initialize_voltage_sensor();
 
-    ADC12CTL0 = SHT0_3 + ADC12ON; // Set Sample/Hold time ;  Turn On ADC12;  Reference ON
-    ADC12CTL1 = SHP;              // Use sampling timer | ADC12 Sample/Hold Pulse Mode
-    ADC12MCTL0 = SREF_0 + INCH_0; // posivetive_voltage_reference = AVcc = 3.3V ;  Anolog(ADC) Input Channel = A0, which is P6.0
-    // if you don't set any reference-voltage, the Voltage-max(Vcc) will be 3.3V, the Vss will be 0V
-    ADC12IE = BIT0;   // Enable interrupt | ADC12 Interrupt Enable
-    ADC12CTL0 |= ENC; // Conversion enabled | ADC12 Enable Conversion
-    P6SEL |= BIT0;    // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
+    while (1) {
+        float value = get_value_from_voltage_sensor();
+        print_float(0, 1, value);
 
-
-    for (;;) {
-        // This should actually happen in a timer interrupt where
-        // we may like to sample only once in, say 1 second
-
-        __delay_cycles(1000);            // Wait for ADC Ref to settle
-        ADC12CTL0 |= ADC12SC;            // Sampling open | ADC12 Start Conversion
-        __bis_SR_register(CPUOFF + GIE); // LPM0, ADC12_ISR will force exit
+        float angle = map_range(value, 395, 3536, -90, 90);
+        print_float(0, 2, angle);
+        print_number(0, 3, -2);
+        print_float(0, 4, -3.3);
     }
-}
-
-// ADC12 interrupt service routine
-#pragma vector = ADC12_VECTOR
-__interrupt void ADC12_ISR(void) {
-    // We assume that ADC12MEM0 is in a range of (0, 4095)
-    millisecond_of_delay(200);
-
-    unsigned int raw_number = ADC12MEM0;
-    char voltage_string[30];
-
-    // Get average_value of ADC12MEM0
-    int all = 0;
-    int i;
-    for (i = 0; i < 8; i++) {
-        all += ADC12MEM0;
-    }
-    int average_value = all / 8;
-
-    float voltage = (float)average_value / (float)4095 * (float)4.5;
-    float_to_string(voltage, voltage_string, 4);
-
-    char text[30];
-    sprintf(text, "voltage = %s", voltage_string);
-    print_string(0, 1, text);
-
-    sprintf(text, "voltage = %d", ADC12MEM0);
-    print_string(0, 2, text);
-
-    __bic_SR_register_on_exit(CPUOFF); // Clear CPUOFF bit from 0(SR)
 }
 ```
 

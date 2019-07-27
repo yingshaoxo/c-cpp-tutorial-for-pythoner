@@ -5,6 +5,8 @@
 ```c
 #include <msp430.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // ***************
 // ****************
@@ -200,7 +202,15 @@ void float_to_string(float n, char *res, int afterpoint) {
 
 void print_float(int x, int y, float number) {
     char text[20];
-    float_to_string(number, text, 4);
+    if (number < 0){
+        number = abs(number);
+        char text2[20];
+        strcpy(text, "-");
+        float_to_string(number, text2, 4);
+        strcat(text, text2);
+    } else {
+        float_to_string(number, text, 4);
+    }
     print_string(x, y, text);
 }
 
@@ -778,6 +788,111 @@ int main(void) {
 }
 ```
 
+## Ultrasonic Sensor
+
+```c
+#include <msp430.h>
+
+// ***************
+// ****************
+// SET ultrasonic sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
+
+#define trigger_pin BIT3
+#define echo_pin BIT4
+
+#define set_trigger_pin_as_output P1DIR |= trigger_pin
+#define set_trigger_pin_to_0 P1OUT &= ~trigger_pin
+#define set_trigger_pin_to_1 P1OUT |= trigger_pin
+
+#define set_echo_pin_as_input P1DIR &= ~echo_pin
+#define input_from_echo_pin (P1IN & echo_pin)
+
+unsigned long int milliseconds_for_ultrasonic_sensor;
+unsigned long int ultrasonic_sensor_value;
+
+int initialize_ultrasonic_sensor() {
+    set_trigger_pin_as_output;
+    set_echo_pin_as_input;
+
+    TBCCTL0 |= CCIE;         // Timer B Capture/Compare Control 0; CCR0 interrupt enabled
+    TBCCR0 = 1000;           // Timer B Capture/Compare Register 0; 1ms at 1mhz
+    TBCTL = TBSSEL_2 + MC_1; // Timer B Control; SMCLK, upmode
+
+    P1IFG &= ~(echo_pin); // clear all interrupt flags
+
+    _BIS_SR(GIE); // global interrupt enable
+}
+
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & echo_pin) // is that interrupt request come frome echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    {
+        if (!(P1IES & echo_pin)) // is this the rising edge? (P1IES & echo_pin) == 0
+        {
+            TBCTL |= TBCLR; // clears timer B
+            milliseconds_for_ultrasonic_sensor = 0;
+            P1IES |= echo_pin; // set P1 echo_pin to falling edge interrupt: P1IES = 1
+        } else {
+            ultrasonic_sensor_value =
+                (long)milliseconds_for_ultrasonic_sensor * 1000 + (long)TBR; // calculating ECHO lenght; TBR is a us time unit at this case
+            P1IES &= ~echo_pin;                                              // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
+        }
+        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    }
+}
+
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B(void) {
+    milliseconds_for_ultrasonic_sensor++;
+}
+
+int ultrasonic_detection() {
+    P1IE &= ~echo_pin; // disable interupt
+
+    set_trigger_pin_to_1; // generate pulse
+    __delay_cycles(10);   // for 10us
+    set_trigger_pin_to_0; // stop pulse
+
+    P1IFG &= ~(echo_pin); // interrupt flag: set to 0 to indicate No interrupt is pending
+    P1IE |= echo_pin;     // interrupt enable: enable interupt on ECHO pin
+
+    unsigned long int distance = ultrasonic_sensor_value / 58; // converting ECHO lenght into cm
+
+    if (distance > 100) {
+        distance = 0;
+    }
+
+    return distance;
+}
+
+float get_dynamic_approaching_speed(int target_distance, int real_distance, int approaching_length, float max_speed, float min_speed) {
+    // loss: distance between target value and real value
+    // approaching_length: when real value approaching this area, the speed need to get change to adapt the new situation
+    int loss = abs(target_distance - real_distance);
+    print_float(0, 3, loss);
+    float speed = loss / (approaching_length / max_speed);
+
+    if (speed < min_speed) {
+        speed = min_speed;
+    }
+
+    print_float(0, 4, speed);
+    return speed;
+}
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop watchdog timer
+
+    initialize_ultrasonic_sensor();
+
+    while (1) {
+        int distance = ultrasonic_detection();
+    }
+}
+```
+
 ## Voltage Sensor
 
 ```c
@@ -810,6 +925,17 @@ float get_value_from_voltage_sensor() {
 }
 
 float map_range(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
+    // A function just like map() in arduino
+    if (value < fromLow) {
+        value = fromLow;
+    } else if (value > fromHigh) {
+        value = fromHigh;
+    }
+
+    float target_value = ((toHigh - toLow) / (fromHigh - fromLow)) * (value - fromLow) + toLow;
+
+    return target_value;
+}float map_range(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
     // A function just like map() in arduino
     float from_range_length = fromHigh - fromLow;
     float to_reange_length = toHigh - toLow;
