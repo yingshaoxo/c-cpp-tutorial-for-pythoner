@@ -778,3 +778,58 @@ int main(void) {
 }
 ```
 
+## Voltage Sensor
+
+```c
+// ***************
+// ****************
+// SET Voltage Sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ***************
+// ****************
+
+void initialize_voltage_sensor() {
+    ADC12CTL0 = SHT0_2 + ADC12ON; // Set Sample/Hold time ;  Turn On ADC12
+    ADC12CTL1 = SHP;              // Use sampling timer | ADC12 Sample/Hold Pulse Mode
+    //ADC12IE = BIT0;               // Enable interrupt | ADC12 Interrupt Enable
+    ADC12CTL0 |= ENC; // Conversion enabled | ADC12 Enable Conversion
+
+    __delay_cycles(1000); // Wait for ADC Ref to settle
+    P6SEL |= BIT0;        // P6.0 ADC option select | Port 6 Selection; set this pin as a Peripheral-pin, not just use a simple I/O Function anymore
+}
+
+float get_value_from_voltage_sensor() {
+    ADC12CTL0 |= ADC12SC; // Sampling open | ADC12 Start Conversion
+
+    while ((ADC12IFG & BIT0) == 0) {
+        // If no new value was sent to ADC12MEM0, we wait here.
+    }
+
+    ADC12IFG &= ~BIT0; // set ADC interrupt flag to 0. After a new analog value has been giving to ADC12MEM0, ADC12IFG will be set to 1 automatically.
+
+    return ADC12MEM0;
+}
+
+float map_range(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
+    // A function just like map() in arduino
+    float from_range_length = fromHigh - fromLow;
+    float to_reange_length = toHigh - toLow;
+    float target_value = (from_range_length / to_reange_length) * (value - fromLow) + toLow;
+    return target_value;
+}
+
+int main(void) {
+    WDTCTL = WDTPW + WDTHOLD; // Stop WDT
+
+    //initialize_LCD();
+    initialize_voltage_sensor();
+
+    while (1) {
+        float value = get_value_from_voltage_sensor();
+        //print_float(0, 1, value);
+
+        float voltage = (float)value / (float)4095 * (float)5;
+        //print_float(0, 2, voltage);
+    }
+}
+```
+
