@@ -203,7 +203,7 @@ void float_to_string(float n, char *res, int afterpoint) {
 void print_float(int x, int y, float number) {
     char text[20];
     if (number < 0){
-        number = abs(number);
+        number = -number;
         char text2[20];
         strcpy(text, "-");
         float_to_string(number, text2, 4);
