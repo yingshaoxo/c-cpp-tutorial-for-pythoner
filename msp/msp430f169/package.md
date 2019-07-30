@@ -800,14 +800,15 @@ int main(void) {
 ## Ultrasonic Sensor
 
 ```c
-#include <msp430.h>
-
 // ***************
 // ****************
 // SET ultrasonic sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// trigger pin: P1.3
+// echo pin: P1.4
+
 // ***************
 // ****************
-
 #define trigger_pin BIT3
 #define echo_pin BIT4
 
@@ -818,35 +819,33 @@ int main(void) {
 #define set_echo_pin_as_input P1DIR &= ~echo_pin
 #define input_from_echo_pin (P1IN & echo_pin)
 
-unsigned long int milliseconds_for_ultrasonic_sensor;
-unsigned long int ultrasonic_sensor_value;
-
-int initialize_ultrasonic_sensor() {
+void initialize_ultrasonic_sensor() {
     set_trigger_pin_as_output;
     set_echo_pin_as_input;
 
-    TBCCTL0 |= CCIE;         // Timer B Capture/Compare Control 0; CCR0 interrupt enabled
-    TBCCR0 = 1000;           // Timer B Capture/Compare Register 0; 1ms at 1mhz
-    TBCTL = TBSSEL_2 + MC_1; // Timer B Control; SMCLK, upmode
+    TB0CCTL0 |= CCIE;         // Timer B Capture/Compare Control 0; CCR0 interrupt enabled
+    TB0CCR0 = 1000 - 1;       // Timer B Capture/Compare Register 0; 1ms at 1mhz
+    TB0CTL = TBSSEL_2 + MC_1; // Timer B Control; SMCLK, UP mode
 
     P1IFG &= ~(echo_pin); // clear all interrupt flags
 
-    _BIS_SR(GIE); // global interrupt enable
+    //_BIS_SR(GIE); // global interrupt enable
+    __enable_interrupt(); // you must enable all interrupt for thie code to work
 }
 
+unsigned long int ultrasonic_sensor_value;
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is that interrupt request come frome echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
     {
         if (!(P1IES & echo_pin)) // is this the rising edge? (P1IES & echo_pin) == 0
         {
-            TBCTL |= TBCLR; // clears timer B
-            milliseconds_for_ultrasonic_sensor = 0;
+            TB0CCR0 = 50000;   // start to increase TBR microseconds
             P1IES |= echo_pin; // set P1 echo_pin to falling edge interrupt: P1IES = 1
         } else {
-            ultrasonic_sensor_value =
-                (long)milliseconds_for_ultrasonic_sensor * 1000 + (long)TBR; // calculating ECHO lenght; TBR is a us time unit at this case
-            P1IES &= ~echo_pin;                                              // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
+            ultrasonic_sensor_value = TB0R; // calculating ECHO length; TBR is a us time unit at this case
+            P1IES &= ~echo_pin;             // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
+            P1IE &= ~echo_pin;              // disable interrupt
         }
         P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
     }
@@ -854,24 +853,24 @@ __interrupt void Port_1(void) {
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Timer_B(void) {
-    milliseconds_for_ultrasonic_sensor++;
+    // don't know why this have to be exist, but without it, TBR won't work
 }
 
 int ultrasonic_detection() {
-    P1IE &= ~echo_pin; // disable interupt
+    TB0CCR0 = 0; // stop timer, stop increase TBR
 
+    set_trigger_pin_to_0; // stop pulse
+    __delay_cycles(5);    // for 10us
     set_trigger_pin_to_1; // generate pulse
     __delay_cycles(10);   // for 10us
     set_trigger_pin_to_0; // stop pulse
 
     P1IFG &= ~(echo_pin); // interrupt flag: set to 0 to indicate No interrupt is pending
-    P1IE |= echo_pin;     // interrupt enable: enable interupt on ECHO pin
+    P1IE |= echo_pin;     // interrupt enable: enable interrupt on ECHO pin
 
-    unsigned long int distance = ultrasonic_sensor_value / 58; // converting ECHO lenght into cm
+    __delay_cycles(6000); // delay for 6ms, so pin interrupt could finish his job. (distance < 100cm available)
 
-    if (distance > 100) {
-        distance = 0;
-    }
+    unsigned int distance = ultrasonic_sensor_value / 58.2; // converting ECHO length into cm
 
     return distance;
 }

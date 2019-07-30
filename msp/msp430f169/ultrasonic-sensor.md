@@ -666,10 +666,15 @@ int main(void)
 ```c
 #include <msp430.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // ***************
 // ****************
 // SET LCD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// RS: P1.0
+// R/W: P1.1
+// E: P1.2
 // ***************
 // ****************
 #define CS1 P1OUT |= BIT0 // RS
@@ -690,7 +695,7 @@ int main(void)
 #define serial_clock_1 SCLK1 // E
 #define serial_clock_0 SCLK0
 
-void delay(unsigned int t) {
+void millisecond_of_delay(unsigned int t) {
     while (t--) {
         // delay for 1ms
         __delay_cycles(1000);
@@ -739,7 +744,7 @@ void write_command(unsigned char command) {
     then send 0011 0000 (d3-d0 0000)
     */
 
-    delay(1);
+    millisecond_of_delay(1);
     chip_select_0; // when chip_select from 1 to 0, serial counter and data will
                    // be reset
 }
@@ -765,7 +770,7 @@ void write_data(unsigned char character) {
     then send 0011 0000 (d3-d0 0000)
     */
 
-    delay(1);
+    millisecond_of_delay(1);
     chip_select_0;
 }
 
@@ -790,14 +795,84 @@ void print_string(unsigned int x, unsigned int y, unsigned char *string) {
     while (*string > 0) {
         write_data(*string);
         string++;
-        delay(1);
+        millisecond_of_delay(1);
     }
 }
 
-void print_number(long int number) {
+void print_number(int x, int y, long int number) {
     char text[20];
     sprintf(text, "%d", number);
-    print_string(0, 4, text);
+    print_string(x, y, text);
+}
+
+void reverse_a_string_with_certain_length(char *str, int len) {
+    int i = 0, j = len - 1, temp;
+    while (i < j) {
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+
+int int_to_string(int x, char str[], int d) {
+    int i = 0;
+    while (x) {
+        str[i++] = (x % 10) + '0';
+        x = x / 10;
+    }
+
+    // If number of digits required is more, then
+    // add 0s at the beginning
+    while (i < d)
+        str[i++] = '0';
+
+    reverse_a_string_with_certain_length(str, i);
+    str[i] = '\0';
+    return i;
+}
+
+void float_to_string(float n, char *res, int afterpoint) {
+    // Extract integer part
+    int ipart = (int)n;
+
+    // Extract floating part
+    float fpart = n - (float)ipart;
+
+    // convert integer part to string
+    int i = int_to_string(ipart, res, 0);
+
+    // check for display option after point
+    if (afterpoint != 0) {
+        res[i] = '.'; // add dot
+
+        // Get the value of fraction part upto given no.
+        // of points after dot. The third parameter is needed
+        // to handle cases like 233.007
+        int power = 1;
+        int count_num = 0;
+        for (; count_num < afterpoint; count_num++) {
+            power = power * 10;
+        }
+        fpart = fpart * power;
+
+        int_to_string((int)fpart, res + i + 1, afterpoint);
+    }
+}
+
+void print_float(int x, int y, float number) {
+    char text[20];
+    if (number < 0) {
+        number = -number;
+        char text2[20];
+        strcpy(text, "-");
+        float_to_string(number, text2, 4);
+        strcat(text, text2);
+    } else {
+        float_to_string(number, text, 4);
+    }
+    print_string(x, y, text);
 }
 
 void screen_clean() {
@@ -805,21 +880,28 @@ void screen_clean() {
 }
 
 void initialize_LCD() {
-    delay(1000); // delay for LCD to wake up
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+
+    millisecond_of_delay(1000); // delay for LCD to wake up
 
     write_command(0x30); // 30=0011 0000; use `basic instruction mode`, use
                          // `8-BIT interface`
-    delay(20);
+    millisecond_of_delay(20);
     write_command(0x0c); // 0c=0000 1100; DISPLAY ON, cursor OFF, blink OFF
-    delay(20);
+    millisecond_of_delay(20);
     write_command(0x01); // 0c=0000 0001; CLEAR
 
-    delay(200);
+    millisecond_of_delay(200);
 }
 
 // ***************
 // ****************
 // SET ultrasonic sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// trigger pin: P1.3
+// echo pin: P1.4
+
 // ***************
 // ****************
 #define trigger_pin BIT3
@@ -832,83 +914,77 @@ void initialize_LCD() {
 #define set_echo_pin_as_input P1DIR &= ~echo_pin
 #define input_from_echo_pin (P1IN & echo_pin)
 
-unsigned long int milliseconds;
-unsigned long int distance;
-unsigned long int sensor;
-
-int initialize_ultrasonic_sensor() {
+void initialize_ultrasonic_sensor() {
     set_trigger_pin_as_output;
     set_echo_pin_as_input;
 
-    TACCTL0 |= CCIE;         // Timer A Capture/Compare Control 0; CCR0 interrupt enabled
-    TACCR0 = 1000;           // Timer A Capture/Compare Register 0; 1ms at 1mhz
-    TACTL = TASSEL_2 + MC_1; // Timer A Control; SMCLK, upmode
+    TB0CCTL0 |= CCIE;         // Timer B Capture/Compare Control 0; CCR0 interrupt enabled
+    TB0CCR0 = 1000 - 1;       // Timer B Capture/Compare Register 0; 1ms at 1mhz
+    TB0CTL = TBSSEL_2 + MC_1; // Timer B Control; SMCLK, UP mode
 
-    P1IFG = 0x00; // clear all interrupt flags
+    P1IFG &= ~(echo_pin); // clear all interrupt flags
 
-    _BIS_SR(GIE); // global interrupt enable
+    //_BIS_SR(GIE); // global interrupt enable
+    __enable_interrupt(); // you must enable all interrupt for thie code to work
 }
 
+unsigned long int ultrasonic_sensor_value;
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is that interrupt request come frome echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
     {
         if (!(P1IES & echo_pin)) // is this the rising edge? (P1IES & echo_pin) == 0
         {
-            TACTL |= TACLR; // clears timer A
-            milliseconds = 0;
+            TB0CCR0 = 50000;   // start to increase TBR microseconds
             P1IES |= echo_pin; // set P1 echo_pin to falling edge interrupt: P1IES = 1
         } else {
-            sensor =
-                (long)milliseconds * 1000 + (long)TAR; // calculating ECHO lenght; TAR is a us time unit at this case
-            P1IES &= ~echo_pin;                        // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
+            ultrasonic_sensor_value = TB0R; // calculating ECHO length; TBR is a us time unit at this case
+            P1IES &= ~echo_pin;             // interrupt edge selection: rising edge on ECHO pin: P1IES = 0
+            P1IE &= ~echo_pin;              // disable interrupt
         }
         P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
     }
 }
 
-#pragma vector = TIMER0_A0_VECTOR
-__interrupt void Timer_A(void) {
-    milliseconds++;
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B(void) {
+    // don't know why this have to be exist, but without it, TBR won't work
 }
 
 int ultrasonic_detection() {
-    P1IE &= ~BIT0; // disable interupt
+    TB0CCR0 = 0; // stop timer, stop increase TBR
 
+    set_trigger_pin_to_0; // stop pulse
+    __delay_cycles(5);    // for 10us
     set_trigger_pin_to_1; // generate pulse
     __delay_cycles(10);   // for 10us
     set_trigger_pin_to_0; // stop pulse
 
-    P1IFG = 0x00;     // interrupt flag: set to 0 to indicate No interrupt is pending
-    P1IE |= echo_pin; // interrupt enable: enable interupt on ECHO pin
-    //__delay_cycles(30000); // delay for 30ms (after this time echo times out
-    // if there is no object detected)
+    P1IFG &= ~(echo_pin); // interrupt flag: set to 0 to indicate No interrupt is pending
+    P1IE |= echo_pin;     // interrupt enable: enable interrupt on ECHO pin
 
-    distance = sensor / 58; // converting ECHO lenght into cm
+    __delay_cycles(6000); // delay for 6ms, so pin interrupt could finish his job. (distance < 100cm available)
+
+    unsigned int distance = ultrasonic_sensor_value / 58.2; // converting ECHO length into cm
+
+    return distance;
 }
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
-    P1DIR = 0xFF;
-    P1OUT = 0x00;
-
     initialize_LCD();
     initialize_ultrasonic_sensor();
 
     while (1) {
-        //print_string(0, 4, "    "); // clear screen
-        screen_clean();
+        print_string(0, 4, "    "); // clear screen
 
-        ultrasonic_detection();
-
+        int distance = ultrasonic_detection();
         distance = 1.424 * distance;
 
-        if ((distance > 0) && (distance < 1000)) {
-            print_number(distance);
-        }
+        print_number(0, 4, distance);
 
-        delay(200);
+        millisecond_of_delay(200);
     }
 
     return 0;
