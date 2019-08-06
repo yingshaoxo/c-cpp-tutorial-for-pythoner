@@ -29,6 +29,7 @@
     * [1-Axis Analog Accelerometer](msp/msp430f169/1-axis-analog-accelerometer.md)
     * [PID Controller](msp/msp430f169/pid-controller.md)
     * [HX711 Weight Sensor](msp/msp430f169/hx711-weight-sensor.md)
+    * [Serial Communication](msp/msp430f169/serial-communication.md)
     * [MPU-6050](msp/msp430f169/mpu-6050.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
