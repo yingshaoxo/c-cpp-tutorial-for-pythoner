@@ -962,3 +962,118 @@ int main(void) {
 }
 ```
 
+## Weight Sensor
+
+```c
+// ***************
+// ****************
+// SET Weight Sensor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// SCK: P6.6
+// DT: P6.7
+//
+// ***************
+// ****************
+
+#define set_SCK_as_output P6DIR |= BIT6
+
+#define set_SCK_to_1 P6OUT |= BIT6
+#define set_SCK_to_0 P6OUT &= ~BIT6
+
+#define set_DT_as_input P6DIR &= ~BIT7
+#define input_of_DT P6IN &BIT7
+
+unsigned long base_weight = 0;
+unsigned long read_weight() {
+    unsigned long Count;
+    unsigned int i;
+
+    set_SCK_to_0;
+    Count = 0;
+
+    while (input_of_DT) {
+        ; // Wait until chip was ready
+    }
+
+    for (i = 0; i < 24; i++) {
+        set_SCK_to_1;
+        Count = Count << 1;
+        set_SCK_to_0;
+
+        //__delay_cycles(10);
+
+        if (input_of_DT) {
+            Count++;
+        }
+    }
+
+    set_SCK_to_1;
+    Count = Count ^ 0x800000; // Data conversion
+    set_SCK_to_0;
+
+    //print_number(0, 1, base_weight);
+    //print_number(0, 2, Count);
+
+    unsigned long result = Count - base_weight;
+
+    if (base_weight != 0) { // not the first measure
+        return result;
+    } else { // it's the first measure, and we want to get the base weight
+        return Count;
+    }
+}
+
+unsigned long read_average_weight() {
+    unsigned long value = 0;
+    unsigned int i;
+    unsigned int loops = 8;
+
+    for (i = 0; i < loops; i++) {
+        value = value + read_weight();
+    }
+
+    return value / loops;
+}
+
+int read_gram() {
+    unsigned long result = read_average_weight();
+    //print_number(0, 1, result);
+
+    result = (result / 779) * 2;
+
+    if (((int)result < 0) || ((int)result > 20000)) { // get rid of error value
+        return 0;
+    }
+
+    return result;
+}
+
+void initialize_weight_sensor() {
+    set_SCK_as_output;
+    set_DT_as_input;
+
+    // wait for this deive to wake up
+    set_SCK_to_1;
+    __delay_cycles(200000);
+    set_SCK_to_0;
+
+    base_weight = read_weight();
+}
+
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
+
+    //initialize_LCD();
+    initialize_weight_sensor();
+
+    while (1) {
+        //print_number(0, 4, read_gram());
+
+        //millisecond_of_delay(1000);
+        //screen_clean();
+    }
+
+    return 0;
+}
+```
+
