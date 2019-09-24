@@ -31,5 +31,6 @@
     * [HX711 Weight Sensor](msp/msp430f169/hx711-weight-sensor.md)
     * [Serial Communication](msp/msp430f169/serial-communication.md)
     * [MPU-6050](msp/msp430f169/mpu-6050.md)
+    * [OpenSmart LCD](msp/msp430f169/opensmart-lcd.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
 
