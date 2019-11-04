@@ -4,8 +4,6 @@
 * [The simplest structure of C](the-simplest-structure-of-c.md)
 * [The simplest structure of C++](the-simplest-structure-of-c++.md)
 * [C/C++ Terminologys](c-c++-terminologys.md)
-* [Make a Directory](make-a-directory.md)
-* [Process Communication](process-communication.md)
 * [The Values in C/C++](the-values-in-c-c++.md)
 * [Use Bazel and Gtest](use-bazel-and-gtest.md)
 * [MSP](msp/README.md)
@@ -33,4 +31,6 @@
     * [MPU-6050](msp/msp430f169/mpu-6050.md)
     * [OpenSmart LCD](msp/msp430f169/opensmart-lcd.md)
     * [Abbreviations](msp/msp430f169/abbreviations.md)
+* [Make a Directory \(Not Recommended for Reading\)](make-a-directory.md)
+* [Process Communication \(Not Recommended for Reading\)](process-communication.md)
 
