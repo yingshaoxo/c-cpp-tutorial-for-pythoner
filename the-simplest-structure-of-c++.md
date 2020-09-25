@@ -1,7 +1,6 @@
 # The simplest structure of C++
 
-{% code-tabs %}
-{% code-tabs-item title="hi.cpp" %}
+{% code title="hi.cpp" %}
 ```cpp
 #include <iostream>
 
@@ -14,8 +13,7 @@ int main() {
     return 0;
 }
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
+{% endcode %}
 
 * iostream = input and output stream
 * std = standard \(library\)

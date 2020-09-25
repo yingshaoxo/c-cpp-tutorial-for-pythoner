@@ -1,7 +1,6 @@
 # The simplest structure of C
 
-{% code-tabs %}
-{% code-tabs-item title="hi.c" %}
+{% code title="hi.c" %}
 ```c
 #include <stdio.h>
 
@@ -12,8 +11,7 @@ int main() {
     return 0;
 }
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
+{% endcode %}
 
 * stdio = standard input and output
 * printf = print formatted
