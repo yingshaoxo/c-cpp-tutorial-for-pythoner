@@ -33,6 +33,7 @@
     * [Abbreviations](msp/msp430f169/abbreviations.md)
   * [MSP430F5529](msp/msp430f5529/README.md)
     * [Preparing](msp/msp430f5529/preparing.md)
+    * [Pinmaps](msp/msp430f5529/pinmaps.md)
 * [Make a Directory \(Not Recommended for Reading\)](make-a-directory.md)
 * [Process Communication \(Not Recommended for Reading\)](process-communication.md)
 
