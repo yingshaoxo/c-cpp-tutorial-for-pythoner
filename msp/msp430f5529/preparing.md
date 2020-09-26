@@ -20,5 +20,14 @@ I just want to use it as quickly as possible.
 
 ### Arduino Framework
 
-[https://energia.nu/pinmaps/msp-exp430f5529/](https://energia.nu/pinmaps/msp-exp430f5529/)
+{% embed url="https://energia.nu/pinmaps/msp-exp430f5529/" %}
+
+### Shortcuts
+
+Due to my less knowledge, I don't know how to configure task.json under VSCode to make a "Build and Upload" operation.
+
+So here are the alternative operations that working:
+
+* ctrl+shift+B: build
+* ctrl+alt+U: upload
 
