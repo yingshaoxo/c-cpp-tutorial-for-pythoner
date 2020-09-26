@@ -34,6 +34,7 @@
   * [MSP430F5529](msp/msp430f5529/README.md)
     * [Preparing](msp/msp430f5529/preparing.md)
     * [Pinmaps](msp/msp430f5529/pinmaps.md)
+    * [Light Up Your First LED](msp/msp430f5529/light-up-your-first-led.md)
 * [Make a Directory \(Not Recommended for Reading\)](make-a-directory.md)
 * [Process Communication \(Not Recommended for Reading\)](process-communication.md)
 
