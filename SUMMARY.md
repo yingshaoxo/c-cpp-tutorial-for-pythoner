@@ -37,6 +37,7 @@
     * [Light Up Your First LED](msp/msp430f5529/light-up-your-first-led.md)
     * [SPI](msp/msp430f5529/spi.md)
     * [ili9341-LCD](msp/msp430f5529/ili9341-lcd.md)
+    * [More on SPI](msp/msp430f5529/more-on-spi.md)
 * [Make a Directory \(Not Recommended for Reading\)](make-a-directory.md)
 * [Process Communication \(Not Recommended for Reading\)](process-communication.md)
 
