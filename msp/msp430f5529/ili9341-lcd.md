@@ -23,7 +23,7 @@ And you don't have to remember the pin-maps, use the following table when you ne
 | GND | Ground |
 | CS | LCD chip select signal, low to enable |
 | RESET | LCD reset signal, low to reset |
-| DC/RS | LCD register/data selection signal. high for register, low for data |
+| DC/RS | LCD register/data selection signal. low for data, high for register |
 | SDI\(MOSI\) | SPI bus write data signal |
 | SCK | SPI bus clock signal |
 | LED | Backlight control, hight to light. \(Connect to 3.3V if you don't need to control it\) |
