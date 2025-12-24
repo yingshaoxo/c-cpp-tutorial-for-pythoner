@@ -1,4 +1,4 @@
-# The simplest structure of C
+# The complex structure of C
 
 {% code title="main.c" %}
 ```c
