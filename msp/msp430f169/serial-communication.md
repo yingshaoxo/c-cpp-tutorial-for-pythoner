@@ -373,5 +373,138 @@ while 1:
 
 ```
 
+## Notes from year 2025
 
+I do not recommand the UART tx,rx serial protocol, it binds deeply with a static speed such as 9600 or 115200. It is stupid, for some reason the msp430 will never be able to get it right.
 
+I would recommand SPI protocol.
+
+```
+SPI详解: Serial Peripheral Interface.
+
+它通常由3根线组成，clock_line for send 0 or 1 signal, output_line for send real data out, input_line for getting real data in.
+
+```
+a_byte_needs_to_send = [1,0,0,0,0,0,0,0]
+for one in a_byte_needs_to_send:
+    set_output_line_to(one)
+    set_clock_line_to(0)
+    set_clock_line_to(1)
+```
+
+从这个只发送1byte的例子里我们可以看到，通信的另一方，只有当clock从0变成1，才会去读取output_line上的值。这样一来，发送数据的快慢完全是可控的。不需要提前协商好9600或者125000的速度。如果速度减慢到100ms一次，甚至不需要依赖interrupt机制。即使芯片内部没有UART串口功能，我们也能很轻松的写出稳定的通信协议。
+```
+
+但如果你硬是要折腾固定速率的serial协议，我折腾了几天，发现难用到爆！首先遇到的第一个问题就是windows xp没有串口驱动，它是搞白名单的。没交保护费不准用。其次，linux是强行更新的，只有最新版才有驱动。
+
+```
+// a msp430f169 UART exmaple
+
+// ***************
+// ****************
+// SET Serial Communication!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// TX(transmit): P3.4
+// RX(receive): P3.5
+//
+// One thing you have to know: Tx connect to Rx, Rx connect to Tx  !!!!!!!!!
+//
+// VCC: 3.3V
+//
+// ***************
+// ****************
+
+void initialize_serial_communication() {
+    /* for 9500 baud */
+    //P3SEL |= 0x30;        // P3.4,5 = USART0 TXD/RXD
+    //ME1 |= UTXE0 + URXE0; // Enable USART0 TXD/RXD
+    //UCTL0 |= CHAR;        // 8-bit character
+    //UTCTL0 |= SSEL0;      // UCLK = ACLK
+    //UBR00 = 0x03;         // 32k/9600 - 3.41
+    //UBR10 = 0x00;         //
+    //UMCTL0 = 0x4A;        // Modulation
+    //UCTL0 &= ~SWRST;      // Initialize USART state machine
+
+    /* for 115200 baud */
+    volatile unsigned int i;
+    WDTCTL = WDTPW + WDTHOLD; // Stop WDT
+    P3SEL |= 0x30;            // P3.4 and P3.5 = USART0 TXD/RXD
+
+    BCSCTL1 &= ~XT2OFF; // XT2on
+
+    do {
+        IFG1 &= ~OFIFG; // Clear OSCFault flag
+        for (i = 0xFF; i > 0; i--)
+            ;                 // Time for flag to set
+    } while ((IFG1 & OFIFG)); // OSCFault flag still set?
+
+    BCSCTL2 |= SELM_2 + SELS; // MCLK = SMCLK = XT2 (safe)
+    ME1 |= UTXE0 + URXE0;     // Enable USART0 TXD/RXD
+    UCTL0 |= CHAR;            // 8-bit character
+    UTCTL0 |= SSEL1;          // UCLK = SMCLK
+    UBR00 = 0x45;             // 8MHz 115200
+    UBR10 = 0x00;             // 8MHz 115200
+    UMCTL0 = 0x00;            // 8MHz 115200 modulation
+    UCTL0 &= ~SWRST;          // Initialize USART state machine
+
+    IE1 |= URXIE0; // Enable USART0 RX interrupt
+
+    _BIS_SR(GIE); // just enable general interrupt
+}
+
+void send_bytes_to_serial(unsigned char *data) {
+    int index = 0;
+    while (index < 32)
+    {
+        unsigned char a_byte = data[index];
+        while (!(IFG1 & UTXIFG0)) {
+            // USART0 TX buffer ready?
+        }
+        if (a_byte == '\0') {
+            break;
+        }
+        TXBUF0 = a_byte; // send a byte
+        index += 1;
+    }
+    while (!(IFG1 & UTXIFG0)) {
+    }
+    TXBUF0 = '\r';
+    while (!(IFG1 & UTXIFG0)) {
+    }
+    TXBUF0 = '\n';
+    while (!(IFG1 & UTXIFG0)) {
+    }
+    TXBUF0 = 0x04; // transmision end mark, similar to \x04
+}
+
+unsigned char uart_input_sentence[32] = {'\0'};
+int uart_input_index = 0;
+int my_flag = 0;
+#pragma vector = USART0RX_VECTOR
+__interrupt void usart0_rx(void) {
+    uart_input_sentence[uart_input_index] = (unsigned char)RXBUF0;
+    if ((uart_input_index >= 31) || (uart_input_sentence[uart_input_index] == 0x04)) {
+        uart_input_sentence[0] = '\0';
+        uart_input_index = 0;
+        //maybe print the one line result by using printf(uart_input_sentence);
+    } else {
+        uart_input_index += 1;
+    }
+}
+
+int main(void)
+{
+    WDTCTL = WDTPW + WDTHOLD; // close watchdog
+
+    initialize_serial_communication();
+
+    delay(1000);
+    send_bytes_to_serial("print('hi')");
+
+    while (1) {
+        delay(1000);
+
+        //printf(uart_input_sentence);
+    }
+}
+```
