@@ -490,6 +490,10 @@ __interrupt void usart0_rx(void) {
     } else {
         uart_input_index += 1;
     }
+
+    //if (IFG1 & URXIFG0) {
+    //    print(U0RXBUF);
+    //}
 }
 
 int main(void)
